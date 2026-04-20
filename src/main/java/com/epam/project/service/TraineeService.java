@@ -5,6 +5,7 @@ import com.epam.project.model.Trainee;
 import java.util.Date;
 
 public interface TraineeService {
+
     Trainee createProfile(String firstName, String lastName, Date dateOfBirth, String address);
 
     Trainee updateProfile(Trainee trainee);

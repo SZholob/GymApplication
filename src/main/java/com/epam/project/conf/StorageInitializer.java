@@ -24,17 +24,33 @@ public class StorageInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageInitializer.class);
 
-    @Autowired
     private Map<Long, Trainee> traineeStorage;
 
-    @Autowired
     private Map<Long, Trainer> trainerStorage;
 
-    @Autowired
     private Map<Long, Training> trainingStorage;
 
-    @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    public void setTraineeStorage(Map<Long, Trainee> traineeStorage) {
+        this.traineeStorage = traineeStorage;
+    }
+
+    @Autowired
+    public void setTrainerStorage(Map<Long, Trainer> trainerStorage) {
+        this.trainerStorage = trainerStorage;
+    }
+
+    @Autowired
+    public void setTrainingStorage(Map<Long, Training> trainingStorage) {
+        this.trainingStorage = trainingStorage;
+    }
+
+    @Autowired
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
 
     @Value("${storage.init.file.path}")
     private String initFilePath;
