@@ -23,11 +23,13 @@ public class TrainerDaoImp implements TrainerDao {
         this.trainerStorage = trainerStorage;
     }
 
-    private long idCounter = 1;
-
     public Trainer save(Trainer trainer) {
         if (trainer.getId() == null) {
-            trainer.setId(idCounter++);
+            long maxId = trainerStorage.keySet()
+                    .stream()
+                    .max(Long::compare)
+                    .orElse(0L);
+            trainer.setId(maxId + 1);
         }
         trainerStorage.put(trainer.getId(), trainer);
         logger.info("Saved trainer with name {}. Details: {}",

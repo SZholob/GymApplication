@@ -11,11 +11,11 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Training {
-    private long id;
+    private Long id;
 
-    private long trainerId;
+    private Long trainerId;
 
-    private long traineeId;
+    private Long traineeId;
 
     private String trainingName;
 

@@ -24,11 +24,14 @@ public class TraineeDaoImp implements TraineeDao {
         this.traineeStorage = traineeStorage;
     }
 
-    private long idCounter = 1;
-
     public Trainee save(Trainee trainee) {
         if (trainee.getId() == null) {
-            trainee.setId(idCounter++);
+            long maxId = traineeStorage.keySet()
+                    .stream()
+                    .max(Long::compare)
+                    .orElse(0L);
+
+            trainee.setId(maxId+1);
         }
         traineeStorage.put(trainee.getId(), trainee);
         logger.info("Saved trainee with name {}. Details: {}",

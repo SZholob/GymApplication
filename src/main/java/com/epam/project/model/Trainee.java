@@ -18,4 +18,13 @@ public class Trainee extends User{
         this.dateOfBirth = dateOfBirth;
         this.address = address;
     }
+
+    @Override
+    public String toString(){
+        return "\n Trainee [UserId = " + super.getId()
+                + "\n UserName= " + super.getUsername()
+                + "\n dateOfBirth= " + dateOfBirth
+                + "\n address = " + address
+                + "]\n";
+    }
 }

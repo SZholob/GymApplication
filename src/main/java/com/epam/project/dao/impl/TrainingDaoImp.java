@@ -23,11 +23,12 @@ public class TrainingDaoImp  implements TrainingDao {
         this.trainingStorage = trainingStorage;
     }
 
-    private long idCounter = 1;
-
     public Training save(Training training) {
-        if (training.getId() == 0) {
-            training.setId(idCounter++);
+        if (training.getId() == null) {
+            Long maxId = trainingStorage.keySet().stream()
+                    .max(Long::compareTo)
+                    .orElse(0L);
+            training.setId(maxId + 1);
         }
         trainingStorage.put(training.getId(), training);
         logger.info("Saved training with id {}. Details: {}",

@@ -60,7 +60,7 @@ public class StorageInitializer {
     @PostConstruct
     public void init() {
         try {
-            Resource resource = resourceLoader.getResource(initFilePath);
+            Resource resource = resourceLoader.getResource("data.json");
             if (resource.exists()) {
                 Map<String, List<?>> data = objectMapper.readValue(resource.getInputStream(), Map.class);
                 List<Trainee> trainees = objectMapper.convertValue(data.get("trainees"), objectMapper.getTypeFactory().constructCollectionType(List.class, Trainee.class));
