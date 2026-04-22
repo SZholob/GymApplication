@@ -5,6 +5,7 @@ import com.epam.project.model.Trainee;
 import java.util.List;
 
 public interface TraineeDao {
+
     Trainee save(Trainee trainee);
 
     Trainee findById(Long id);

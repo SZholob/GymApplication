@@ -11,6 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Training {
+
     private Long id;
 
     private Long trainerId;

@@ -11,13 +11,31 @@ public class UserUtils {
 
     public static String generateUsername(String firstName, String lastName, Set<String> existingUsernames) {
         String base = firstName + "." + lastName;
-        String username = base;
-        int count = 1;
-        while (existingUsernames.contains(username)) {
-            username = base + count;
-            count++;
+        if (!existingUsernames.contains(base)) {
+            return base;
         }
-        return username;
+
+        int maxSuffix = 0;
+
+        for (String username : existingUsernames) {
+            if (username.startsWith(base)) {
+                String suffix = username.substring(base.length());
+
+                if (!suffix.isEmpty()) {
+                    try {
+
+                        int num = Integer.parseInt(suffix);
+
+                        if (num > maxSuffix) {
+                            maxSuffix = num;
+                        }
+                    } catch (NumberFormatException e) {
+                        // Ignore non-numeric suffixes
+                    }
+                }
+            }
+        }
+        return base + (maxSuffix + 1);
     }
 
     public static String generatePassword() {

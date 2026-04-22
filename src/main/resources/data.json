@@ -36,5 +36,21 @@
     "dateOfBirth" : -62135776800000,
     "address" : "1"
   } ],
-  "trainings" : [ ]
+  "trainings" : [ {
+    "id" : 1,
+    "trainerId" : 1,
+    "traineeId" : 2,
+    "trainingName" : "first",
+    "trainingType" : "CARDIO",
+    "trainingDate" : 1777410000000,
+    "trainingDuration" : 60
+  }, {
+    "id" : 2,
+    "trainerId" : 1,
+    "traineeId" : 2,
+    "trainingName" : "test",
+    "trainingType" : "YOGA",
+    "trainingDate" : 1777582800000,
+    "trainingDuration" : 45
+  } ]
 }

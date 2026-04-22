@@ -55,8 +55,8 @@ public class GymFacade {
     }
 
 
-    public Training createTraining(Training training) {
-        return trainingService.createTraining(training);
+    public Training createTraining(Long trainerId, Long traineeId, String trainingName, TrainingType trainingType, Date trainingDate, int trainingDuration) {
+        return trainingService.createTraining(trainerId, traineeId, trainingName, trainingType, trainingDate, trainingDuration);
     }
 
     public Training selectTraining(Long id) {
