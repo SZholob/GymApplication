@@ -22,6 +22,8 @@ public class Trainee extends User{
     @Override
     public String toString(){
         return "\n Trainee [UserId = " + super.getId()
+                + "\n FirstName = " + super.getFirstName()
+                + "\n LastName = " + super.getLastName()
                 + "\n UserName= " + super.getUsername()
                 + "\n dateOfBirth= " + dateOfBirth
                 + "\n address = " + address

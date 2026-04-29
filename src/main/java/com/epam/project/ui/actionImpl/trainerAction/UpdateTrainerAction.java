@@ -1,5 +1,6 @@
 package com.epam.project.ui.actionImpl.trainerAction;
 
+import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.enums.TrainingType;
 import com.epam.project.ui.GymFacade;
@@ -34,8 +35,15 @@ public class UpdateTrainerAction implements MenuAction {
     public void execute() {
         System.out.println("Updating a trainer profile...");
         System.out.println("Please enter the trainer's ID: ");
-        Long id = Long.parseLong(scanner.nextLine());
+        long id;
+        try{
+            id = Long.parseLong(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID format. Please enter a valid numeric ID.");
+            return;
+        }
         Trainer trainer = facade.selectTrainerProfile(id);
+
         if (trainer == null) {
             System.out.println("Trainer not found with ID: " + id);
             return;

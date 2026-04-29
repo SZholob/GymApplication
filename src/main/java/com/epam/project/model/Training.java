@@ -25,4 +25,16 @@ public class Training {
     private Date trainingDate;
 
     private int trainingDuration;
+
+    @Override
+    public String toString() {
+        return "\n Training [Id = " + id
+                + "\n TrainerId = " + trainerId
+                + "\n TraineeId = " + traineeId
+                + "\n TrainingName= " + trainingName
+                + "\n TrainingType= " + trainingType
+                + "\n TrainingDate= " + trainingDate
+                + "\n TrainingDuration= " + trainingDuration
+                + "]\n";
+    }
 }

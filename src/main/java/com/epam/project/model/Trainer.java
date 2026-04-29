@@ -14,4 +14,14 @@ public class Trainer extends User{
         super(id, firstName, lastName, username, password, isActive);
         this.specialization = specialization;
     }
+
+    @Override
+    public String toString() {
+        return "\n Trainer [UserId = " + super.getId()
+                + "\n FirstName = " + super.getFirstName()
+                + "\n LastName = " + super.getLastName()
+                + "\n UserName= " + super.getUsername()
+                + "\n specialization= " + specialization
+                + "]\n";
+    }
 }

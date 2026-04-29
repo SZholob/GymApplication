@@ -26,11 +26,12 @@ public class SelectTrainerAction implements MenuAction {
 
     @Override
     public String getDescription() {
-        return "Selecting a trainer profile...";
+        return "Select Trainer Profile";
     }
 
     @Override
     public void execute() {
+        System.out.println("Selecting a trainer profile...");
         System.out.println("Please enter the trainer's ID: ");
         Long id = Long.parseLong(scanner.nextLine());
         Trainer trainer = facade.selectTrainerProfile(id);

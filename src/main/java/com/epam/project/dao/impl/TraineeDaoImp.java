@@ -10,13 +10,12 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class TraineeDaoImp implements TraineeDao {
 
     private static final Logger logger = LoggerFactory.getLogger(TraineeDaoImp.class);
-
-
     private Map<Long, Trainee> traineeStorage;
 
     @Autowired
@@ -31,7 +30,7 @@ public class TraineeDaoImp implements TraineeDao {
                     .max(Long::compare)
                     .orElse(0L);
 
-            trainee.setId(maxId+1);
+            trainee.setId(maxId + 1);
         }
         traineeStorage.put(trainee.getId(), trainee);
         logger.info("Saved trainee with name {}. Details: {}",
@@ -41,11 +40,11 @@ public class TraineeDaoImp implements TraineeDao {
 
     public Trainee findById(Long id) {
         Trainee trainee = traineeStorage.get(id);
-        if (trainee != null) {
-            logger.debug("Found trainee with id {}, user name is: {}", id,  trainee.getUsername());
-        } else {
-            logger.debug("Trainee with id {} not found", id);
-        }
+        Optional.ofNullable(trainee)
+                .ifPresentOrElse(
+                        t -> logger.debug("Found trainee with id {}, user name is: {}", id, t),
+                        () -> logger.warn("Trainee with id {} not found", id)
+                );
         return trainee;
     }
 
@@ -57,10 +56,9 @@ public class TraineeDaoImp implements TraineeDao {
 
     public void delete(Long id) {
         Trainee removed = traineeStorage.remove(id);
-        if (removed != null) {
-            logger.info("Deleted trainee with id {}, user name is: {}", id, removed.getUsername());
-        } else {
-            logger.warn("Trainee with id {} not found for deletion", id);
-        }
+        Optional.ofNullable(removed).ifPresentOrElse(
+                t -> logger.info("Deleted trainee with id {}, user name is: {}", id, t.getUsername()),
+                () -> logger.warn("Trainee with id {} not found for deletion", id)
+        );
     }
 }

@@ -56,7 +56,6 @@ public class StorageInitializer {
     private String initFilePath;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
     @PostConstruct
     public void init() {
         try {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class TrainerDaoImp implements TrainerDao {
@@ -39,12 +40,10 @@ public class TrainerDaoImp implements TrainerDao {
 
     public Trainer findById(Long id) {
         Trainer trainer = trainerStorage.get(id);
-        if (trainer != null) {
-            logger.debug("Found trainee with id {}, user name is: {}",
-                    id, trainer.getUsername());
-        } else {
-            logger.debug("Trainer with id {} not found", id);
-        }
+        Optional.ofNullable(trainer).ifPresentOrElse(
+                t -> logger.debug("Found trainer with id {}, user name is: {}", id, t),
+                () -> logger.debug("Trainee with id {} not found", id)
+        );
         return trainer;
     }
 

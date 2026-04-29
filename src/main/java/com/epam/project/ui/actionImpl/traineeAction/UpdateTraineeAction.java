@@ -36,7 +36,14 @@ public class UpdateTraineeAction implements MenuAction {
     public void execute() {
         System.out.println("Updating a trainee profile...");
         System.out.println("Please enter the trainee's ID: ");
-        Long id = Long.parseLong(scanner.nextLine());
+        long id;
+        try{
+            id = Long.parseLong(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID format. Please enter a valid numeric ID.");
+            return;
+        }
+
         Trainee trainee = facade.selectTraineeProfile(id);
         if (trainee == null) {
             System.out.println("Trainee not found with ID: " + id);
