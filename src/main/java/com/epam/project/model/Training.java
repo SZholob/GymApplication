@@ -1,36 +1,50 @@
 package com.epam.project.model;
 
-import com.epam.project.model.enums.TrainingType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Data
+import java.time.LocalDate;
+
+
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "trainings")
 public class Training {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long trainerId;
+    @ManyToOne
+    @JoinColumn(name = "trainee_id", nullable = false)
+    private Trainee trainee;
 
-    private Long traineeId;
+    @ManyToOne
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private Trainer trainer;
 
+    @Column(name = "training_name", nullable = false)
     private String trainingName;
 
+    @ManyToOne
+    @JoinColumn(name = "training_type_id", nullable = false)
     private TrainingType trainingType;
 
-    private Date trainingDate;
+    @Column(name = "training_date", nullable = false)
+    private LocalDate trainingDate;
 
-    private int trainingDuration;
+    @Column(name = "training_duration", nullable = false)
+    private Integer trainingDuration;
 
     @Override
     public String toString() {
         return "\n Training [Id = " + id
-                + "\n TrainerId = " + trainerId
-                + "\n TraineeId = " + traineeId
+                + "\n TrainerId = " + trainer.getId()
+                + "\n TraineeId = " + trainee.getId()
                 + "\n TrainingName= " + trainingName
                 + "\n TrainingType= " + trainingType
                 + "\n TrainingDate= " + trainingDate
