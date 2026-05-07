@@ -21,4 +21,5 @@ public class TrainingType {
 
     @Column(name = "training_type_name", nullable = false, unique = true)
     private String trainingTypeName;
+
 }
