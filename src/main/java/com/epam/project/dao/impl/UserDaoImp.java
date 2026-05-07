@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -27,5 +28,13 @@ public class UserDaoImp implements UserDao {
     public User save(User user) {
         sessionFactory.getCurrentSession().persist(user);
         return user;
+    }
+
+    @Override
+    public List<String> findUsernamesByPrefix(String prefix) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("SELECT username FROM User WHERE username LIKE :prefix", String.class)
+                .setParameter("prefix", prefix + "%")
+                .getResultList();
     }
 }

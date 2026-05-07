@@ -2,78 +2,108 @@ package com.epam.project.service.impl;
 
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
+import com.epam.project.dao.TrainingDao;
+import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
+import com.epam.project.model.Training;
+import com.epam.project.model.User;
 import com.epam.project.service.TraineeService;
 import com.epam.project.service.UserUtils;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class TraineeServiceImpl implements TraineeService {
 
     private static final Logger logger = LoggerFactory.getLogger(TraineeServiceImpl.class);
 
-    private TraineeDao traineeDao;
+    private final TraineeDao traineeDao;
+    private final TrainerDao trainerDao;
+    private final TrainingDao trainingDao;
+    private final UserDao userDao;
 
-    private TrainerDao trainerDao;
+    @Override
+    public Trainee createProfile(String firstName, String lastName, LocalDate dateOfBirth, String address) {
+        String baseUsername = firstName + "." + lastName;
 
-    @Autowired
-    public void setTraineeDao(TraineeDao traineeDao) {
-        this.traineeDao = traineeDao;
-    }
-
-    @Autowired
-    public void setTrainerDao(TrainerDao trainerDao) {
-        this.trainerDao = trainerDao;
-    }
-
-    public Trainee createProfile(String firstName, String lastName, Date dateOfBirth, String address) {
-        Set<String> existingUsernames = traineeDao
-                .findAll()
-                .stream()
-                .map(Trainee::getUsername)
-                .collect(Collectors.toSet());
-
-        existingUsernames.addAll(trainerDao
-                .findAll()
-                .stream()
-                .map(Trainer::getUsername)
-                .collect(Collectors.toSet()));
+        Set<String> existingUsernames = new HashSet<>(userDao.findUsernamesByPrefix(baseUsername));
 
         String username = UserUtils.generateUsername(firstName, lastName, existingUsernames);
         String password = UserUtils.generatePassword();
-        Trainee trainee = new Trainee(null, firstName, lastName, username, password, true, dateOfBirth, address);
-        Trainee saved = traineeDao.save(trainee);
-        logger.info("Trainee with username {} was created successfully. Details: {}",
-                saved.getUsername(), saved);
-        return saved;
+
+        User user = new User(null, firstName, lastName, username, password, true);
+        Trainee trainee = new Trainee(null, dateOfBirth, address, user, null, null);
+
+        Trainee savedTrainee = traineeDao.save(trainee);
+        logger.info("Created Trainee Profile. Username: {}, Password: {}", username, password);
+        return savedTrainee;
     }
 
+    @Override
     public Trainee updateProfile(Trainee trainee) {
         Trainee updated = traineeDao.save(trainee);
-        logger.info("Updated trainee profile with username {}. Details: {}",
-                updated.getUsername(), updated);
+        logger.info("Updated Trainee profile: {}", trainee.getUser().getUsername());
         return updated;
     }
 
-    public void deleteProfile(Long id) {
-        traineeDao.delete(id);
-        logger.info("Deleted trainee profile with id {}", id);
+    @Override
+    public void deleteProfile(String username) {
+        traineeDao.deleteByUsername(username);
+        logger.info("Deleted Trainee profile: {}", username);
     }
 
-    public Trainee selectProfile(Long id) {
-        Trainee trainee = traineeDao.findById(id);
-        if (trainee != null) {
-            logger.debug("Selected trainee profile with username {}. Details: {}",
-                    trainee.getUsername(), trainee);
-        }
-        return trainee;
+    @Override
+    @Transactional(readOnly = true)
+    public Trainee selectProfile(String username) {
+        return traineeDao.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Trainee with username " + username + " not found"));
+    }
+
+    @Override
+    public void changePassword(String username, String newPassword) {
+        Trainee trainee = selectProfile(username);
+        trainee.getUser().setPassword(newPassword);
+        traineeDao.save(trainee);
+        logger.info("Password changed successfully for user: {}", username);
+    }
+
+    @Override
+    public void toggleActivation(String username) {
+        Trainee trainee = selectProfile(username);
+        Boolean currentStatus = trainee.getUser().getIsActive();
+        trainee.getUser().setIsActive(!currentStatus);
+        traineeDao.save(trainee);
+        logger.info("Activation toggled for user: {}. New status: {}", username, !currentStatus);
+    }
+
+    @Override
+    public void updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) {
+        Trainee trainee = selectProfile(traineeUsername);
+
+        List<Trainer> newTrainers = trainerUsernames.stream()
+                .map(tUsername -> trainerDao.findByUsername(tUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("Trainer not found: " + tUsername)))
+                .toList();
+
+        trainee.setTrainers(newTrainers);
+        traineeDao.save(trainee);
+        logger.info("Updated trainers list for trainee: {}", traineeUsername);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Training> getTraineeTrainingsList(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerUsername, String trainingTypeName) {
+        return trainingDao.findTraineeTrainingsByCriteria(traineeUsername, fromDate, toDate, trainerUsername, trainingTypeName);
     }
 }

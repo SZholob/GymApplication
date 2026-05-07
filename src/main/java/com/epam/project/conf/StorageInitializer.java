@@ -22,6 +22,7 @@ public class StorageInitializer {
             trainingTypeDao.save(new TrainingType(null, "YOGA"));
             trainingTypeDao.save(new TrainingType(null, "ZUMBA"));
             trainingTypeDao.save(new TrainingType(null, "STRETCHING"));
+            trainingTypeDao.save(new TrainingType(null, "RESISTANCE"));
         }
     }
 }

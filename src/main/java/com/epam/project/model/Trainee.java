@@ -35,7 +35,7 @@ public class Trainee {
     private List<Training> trainings;
 
     @Override
-    public String toString(){
+    public String toString() {
         return "\n Trainee [UserId = " + user.getId()
                 + "\n FirstName = " + user.getFirstName()
                 + "\n LastName = " + user.getLastName()
