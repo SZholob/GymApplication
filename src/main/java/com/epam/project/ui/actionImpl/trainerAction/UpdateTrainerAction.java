@@ -1,25 +1,19 @@
 package com.epam.project.ui.actionImpl.trainerAction;
 
-import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
-import com.epam.project.model.enums.TrainingType;
 import com.epam.project.ui.GymFacade;
 import com.epam.project.ui.MenuAction;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
 
 @Component
+@RequiredArgsConstructor
 public class UpdateTrainerAction implements MenuAction {
 
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
-
-    @Autowired
-    public UpdateTrainerAction(GymFacade facade) {
-        this.facade = facade;
-    }
 
     @Override
     public String getCommandCode() {
@@ -34,46 +28,40 @@ public class UpdateTrainerAction implements MenuAction {
     @Override
     public void execute() {
         System.out.println("Updating a trainer profile...");
-        System.out.println("Please enter the trainer's ID: ");
-        long id;
-        try{
-            id = Long.parseLong(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format. Please enter a valid numeric ID.");
-            return;
-        }
-        Trainer trainer = facade.selectTrainerProfile(id);
 
-        if (trainer == null) {
-            System.out.println("Trainer not found with ID: " + id);
+        System.out.println("Please enter the trainer's username: ");
+        String username = scanner.nextLine();
+
+        System.out.println("Please enter the trainer's password: ");
+        String password = scanner.nextLine();
+
+        if (!facade.authenticate(username, password)) {
+            System.out.println("Authentication failed. Access denied.");
             return;
         }
+
+        Trainer trainer;
+        try {
+            trainer = facade.selectTrainerProfile(username);
+        } catch (Exception e) {
+            System.out.println("Error retrieving profile: " + e.getMessage());
+            return;
+        }
+
         System.out.println("Current trainer details: " + trainer);
+
         System.out.println("Please enter the trainer's new first name (or press Enter to keep current): ");
         String firstName = scanner.nextLine();
         if (!firstName.isEmpty()) {
-            trainer.setFirstName(firstName);
+            trainer.getUser().setFirstName(firstName);
         }
+
         System.out.println("Please enter the trainer's new last name (or press Enter to keep current): ");
         String lastName = scanner.nextLine();
         if (!lastName.isEmpty()) {
-            trainer.setLastName(lastName);
+            trainer.getUser().setLastName(lastName);
         }
-        System.out.println("Available specializations:");
-        TrainingType[] types = TrainingType.values();
-        for (int i = 0; i < types.length; i++) {
-            System.out.println((i + 1) + ". " + types[i]);
-        }
-        System.out.print("Please select a new specialization by number (or press Enter to keep current): ");
-        String specializationInput = scanner.nextLine();
-        if (!specializationInput.isEmpty()) {
-            int choice = Integer.parseInt(specializationInput);
-            if (choice < 1 || choice > types.length) {
-                System.out.println("Invalid choice. Keeping current specialization.");
-            } else {
-                trainer.setSpecialization(types[choice - 1]);
-            }
-        }
+
         Trainer updatedTrainer = facade.updateTrainerProfile(trainer);
         System.out.println("Trainer profile updated successfully! Updated details: " + updatedTrainer);
     }

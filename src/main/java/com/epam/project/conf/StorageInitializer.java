@@ -2,8 +2,9 @@ package com.epam.project.conf;
 
 import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.model.TrainingType;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +14,7 @@ public class StorageInitializer {
 
     private final TrainingTypeDao trainingTypeDao;
 
-    @PostConstruct
+    @EventListener(ContextRefreshedEvent.class)
     @Transactional
     public void initDb() {
 

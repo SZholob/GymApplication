@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -64,19 +65,9 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public void changePassword(String username, String newPassword) {
-        Trainer trainer = selectProfile(username);
-        trainer.getUser().setPassword(newPassword);
-        trainerDao.save(trainer);
-        logger.info("Password changed successfully for trainer: {}", username);
-    }
-
-    @Override
-    public void toggleActivation(String username) {
-        Trainer trainer = selectProfile(username);
-        Boolean currentStatus = trainer.getUser().getIsActive();
-        trainer.getUser().setIsActive(!currentStatus);
-        trainerDao.save(trainer);
-        logger.info("Activation toggled for trainer: {}. New status: {}", username, !currentStatus);
+    @Transactional(readOnly = true)
+    public List<Trainer> getUnassignedActiveTrainers(String traineeUsername) {
+        logger.debug("Fetching unassigned active trainers for trainee: {}", traineeUsername);
+        return trainerDao.findUnassignedActiveTrainers(traineeUsername);
     }
 }

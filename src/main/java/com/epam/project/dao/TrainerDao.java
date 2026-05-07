@@ -12,4 +12,6 @@ public interface TrainerDao {
     Optional<Trainer> findByUsername(String username);
 
     List<Trainer> findAll();
+
+    List<Trainer> findUnassignedActiveTrainers(String traineeUsername);
 }

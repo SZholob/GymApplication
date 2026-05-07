@@ -70,22 +70,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .orElseThrow(() -> new IllegalArgumentException("Trainee with username " + username + " not found"));
     }
 
-    @Override
-    public void changePassword(String username, String newPassword) {
-        Trainee trainee = selectProfile(username);
-        trainee.getUser().setPassword(newPassword);
-        traineeDao.save(trainee);
-        logger.info("Password changed successfully for user: {}", username);
-    }
-
-    @Override
-    public void toggleActivation(String username) {
-        Trainee trainee = selectProfile(username);
-        Boolean currentStatus = trainee.getUser().getIsActive();
-        trainee.getUser().setIsActive(!currentStatus);
-        traineeDao.save(trainee);
-        logger.info("Activation toggled for user: {}. New status: {}", username, !currentStatus);
-    }
 
     @Override
     public void updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) {

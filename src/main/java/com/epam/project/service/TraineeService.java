@@ -5,7 +5,6 @@ import com.epam.project.model.Training;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public interface TraineeService {
@@ -17,11 +16,6 @@ public interface TraineeService {
     void deleteProfile(String username);
 
     Trainee selectProfile(String username);
-
-
-    void changePassword(String username, String newPassword);
-
-    void toggleActivation(String username);
 
     void updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames);
 

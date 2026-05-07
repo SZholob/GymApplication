@@ -1,7 +1,8 @@
 package com.epam.project.service;
 
 import com.epam.project.model.Trainer;
-import com.epam.project.model.enums.TrainingType;
+
+import java.util.List;
 
 public interface TrainerService {
     Trainer createProfile(String firstName, String lastName, String trainingTypeName);
@@ -10,7 +11,5 @@ public interface TrainerService {
 
     Trainer selectProfile(String username);
 
-    void changePassword(String username, String newPassword);
-
-    void toggleActivation(String username);
+    List<Trainer> getUnassignedActiveTrainers(String traineeUsername);
 }

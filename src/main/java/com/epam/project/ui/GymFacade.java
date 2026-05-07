@@ -3,30 +3,31 @@ package com.epam.project.ui;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
-import com.epam.project.model.enums.TrainingType;
-import com.epam.project.service.TraineeService;
-import com.epam.project.service.TrainerService;
-import com.epam.project.service.TrainingService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.epam.project.model.TrainingType;
+import com.epam.project.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class GymFacade {
 
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
+    private final AuthenticationService authenticationService;
+    private final UserService userService;
 
-    @Autowired
-    public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
-        this.traineeService = traineeService;
-        this.trainerService = trainerService;
-        this.trainingService = trainingService;
+    public boolean authenticate(String username, String password) {
+        return authenticationService.authenticate(username, password);
     }
 
-    public Trainee createTraineeProfile(String firstName, String lastName, Date dateOfBirth, String address) {
+    // --- TRAINEE ---
+    public Trainee createTraineeProfile(String firstName, String lastName, LocalDate dateOfBirth, String address) {
         return traineeService.createProfile(firstName, lastName, dateOfBirth, address);
     }
 
@@ -34,15 +35,24 @@ public class GymFacade {
         return traineeService.updateProfile(trainee);
     }
 
-    public void deleteTraineeProfile(Long id) {
-        traineeService.deleteProfile(id);
+    public void deleteTraineeProfile(String username) {
+        traineeService.deleteProfile(username);
     }
 
-    public Trainee selectTraineeProfile(Long id) {
-        return traineeService.selectProfile(id);
+    public Trainee selectTraineeProfile(String username) {
+        return traineeService.selectProfile(username);
     }
 
-    public Trainer createTrainerProfile(String firstName, String lastName, TrainingType specialization) {
+    public List<Training> getTraineeTrainings(String username, LocalDate from, LocalDate to, String trainerUsername, String trainingType) {
+        return traineeService.getTraineeTrainingsList(username, from, to, trainerUsername, trainingType);
+    }
+
+    public void updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
+        traineeService.updateTraineeTrainersList(traineeUsername, trainerUsernames);
+    }
+
+    // --- TRAINER ---
+    public Trainer createTrainerProfile(String firstName, String lastName, String specialization) {
         return trainerService.createProfile(firstName, lastName, specialization);
     }
 
@@ -50,16 +60,24 @@ public class GymFacade {
         return trainerService.updateProfile(trainer);
     }
 
-    public Trainer selectTrainerProfile(Long id) {
-        return trainerService.selectProfile(id);
+    public Trainer selectTrainerProfile(String username) {
+        return trainerService.selectProfile(username);
     }
 
-
-    public Training createTraining(Long trainerId, Long traineeId, String trainingName, TrainingType trainingType, Date trainingDate, int trainingDuration) {
-        return trainingService.createTraining(trainerId, traineeId, trainingName, trainingType, trainingDate, trainingDuration);
+    public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, int trainingDuration) {
+        return trainingService.createTraining(traineeUsername, trainerUsername, trainingName, trainingDate, trainingDuration);
     }
 
-    public Training selectTraining(Long id) {
-        return trainingService.selectTraining(id);
+    public List<Trainer> getUnassignedActiveTrainers(String traineeUsername) {
+        return trainerService.getUnassignedActiveTrainers(traineeUsername);
+    }
+
+    // --- USER ---
+    public void changeUserPassword(String username, String newPassword) {
+        userService.changePassword(username, newPassword);
+    }
+
+    public void toggleUserActivation(String username) {
+        userService.toggleActivation(username);
     }
 }
