@@ -22,9 +22,6 @@ public class ValidationService {
         }
     }
 
-    /**
-     * Універсальний метод для валідації будь-якого об'єкта.
-     */
     public <T> void validate(T object) {
         if (object == null) {
             throw new IllegalArgumentException("Object to validate cannot be null.");

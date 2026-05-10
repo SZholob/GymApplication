@@ -6,18 +6,15 @@ import com.epam.project.dao.TrainingDao;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
-import com.epam.project.model.TrainingType;
 import com.epam.project.service.TrainingService;
 import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Service
 @Transactional
