@@ -10,6 +10,7 @@ import com.epam.project.model.TrainingType;
 import com.epam.project.model.User;
 import com.epam.project.service.TrainerService;
 import com.epam.project.service.UserUtils;
+import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final UserDao userDao;
     private final TrainingDao trainingDao;
     private final TrainingTypeDao trainingTypeDao;
+    private final ValidationService validationService;
 
     @Override
     public Trainer createProfile(String firstName, String lastName, String trainingTypeName) {
@@ -49,6 +51,9 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer trainer = new Trainer(null, specialization, user, null, null);
 
+        validationService.validate(user);
+        validationService.validate(trainer);
+
         Trainer saved = trainerDao.save(trainer);
         logger.info("Trainer Profile created. Username: {}, Password: {}", username, password);
         return saved;
@@ -56,6 +61,8 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     public Trainer updateProfile(Trainer trainer) {
+        validationService.validate(trainer.getUser());
+        validationService.validate(trainer);
         Trainer updated = trainerDao.save(trainer);
         logger.info("Updated trainer profile: {}", updated.getUser().getUsername());
         return updated;

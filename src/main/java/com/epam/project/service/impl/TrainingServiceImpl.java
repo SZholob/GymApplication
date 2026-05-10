@@ -8,6 +8,7 @@ import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
 import com.epam.project.model.TrainingType;
 import com.epam.project.service.TrainingService;
+import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingDao trainingDao;
     private final TraineeDao traineeDao;
     private final TrainerDao trainerDao;
+    private final ValidationService validationService;
 
     public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration) {
 
@@ -52,6 +54,7 @@ public class TrainingServiceImpl implements TrainingService {
         if (!trainer.getTrainees().contains(trainee)) {
             trainer.getTrainees().add(trainee);
         }
+        validationService.validate(training);
 
         Training savedTraining = trainingDao.save(training);
 

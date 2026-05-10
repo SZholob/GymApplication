@@ -6,6 +6,7 @@ import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.TrainingType;
 import com.epam.project.model.User;
+import com.epam.project.service.ValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ public class TrainerServiceImplTest {
 
     @Mock
     private TrainingTypeDao trainingTypeDao;
+
+    @Mock
+    private ValidationService validationService;
 
     @InjectMocks
     private TrainerServiceImpl trainerService;

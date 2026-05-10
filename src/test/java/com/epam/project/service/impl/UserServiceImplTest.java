@@ -2,6 +2,7 @@ package com.epam.project.service.impl;
 
 import com.epam.project.dao.UserDao;
 import com.epam.project.model.User;
+import com.epam.project.service.ValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,9 @@ public class UserServiceImplTest {
 
     @InjectMocks
     private UserServiceImpl userService;
+
+    @Mock
+    private ValidationService validationService;
 
     private User testUser;
 

@@ -2,6 +2,8 @@ package com.epam.project.model;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -38,6 +40,8 @@ public class Training {
     private LocalDate trainingDate;
 
     @Column(name = "training_duration", nullable = false)
+    @NotNull(message = "Training duration is required")
+    @Positive(message = "Training duration must be a positive number")
     private Integer trainingDuration;
 
     @Override
