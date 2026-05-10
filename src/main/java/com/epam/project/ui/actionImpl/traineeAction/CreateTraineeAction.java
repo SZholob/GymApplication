@@ -1,5 +1,6 @@
 package com.epam.project.ui.actionImpl.traineeAction;
 
+import com.epam.project.model.Trainee;
 import com.epam.project.ui.GymFacade;
 import com.epam.project.ui.MenuAction;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +54,14 @@ public class CreateTraineeAction implements MenuAction {
         if (address.isEmpty()) {
             address = null;
         }
+        Trainee newTrainee;
+        try {
+            newTrainee = facade.createTraineeProfile(firstName, lastName, dateOfBirth, address);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error creating trainee profile: " + e.getMessage());
+            return;
+        }
 
-        System.out.println("Trainee profile created successfully!\nDetails: " +
-                facade.createTraineeProfile(firstName, lastName, dateOfBirth, address));
+        System.out.println("Trainee profile created successfully!\nDetails: " + newTrainee);
     }
 }

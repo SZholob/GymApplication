@@ -87,7 +87,13 @@ public class UpdateTraineeAction implements MenuAction {
         if (!address.isEmpty()) {
             trainee.setAddress(address);
         }
-        Trainee updatedTrainee = facade.updateTraineeProfile(trainee);
+        Trainee updatedTrainee;
+        try {
+            updatedTrainee = facade.updateTraineeProfile(trainee);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error updating trainee profile: " + e.getMessage());
+            return;
+        }
         System.out.println("Trainee profile updated successfully: " + updatedTrainee);
     }
 }

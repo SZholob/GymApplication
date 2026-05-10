@@ -33,7 +33,13 @@ public class ChangeUserPasswordAction implements MenuAction {
 
         System.out.print("Enter your NEW password: ");
         String newPassword = scanner.nextLine();
-        facade.changeUserPassword(username, newPassword);
+        try {
+            facade.changeUserPassword(username, newPassword);
+        } catch (Exception e) {
+            System.out.println("Error updating password: " + e.getMessage());
+            return;
+        }
+
         System.out.println("Password updated successfully!");
     }
 }

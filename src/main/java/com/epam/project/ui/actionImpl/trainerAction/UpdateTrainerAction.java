@@ -62,7 +62,13 @@ public class UpdateTrainerAction implements MenuAction {
             trainer.getUser().setLastName(lastName);
         }
 
-        Trainer updatedTrainer = facade.updateTrainerProfile(trainer);
+        Trainer updatedTrainer;
+        try {
+            updatedTrainer = facade.updateTrainerProfile(trainer);
+        } catch (Exception e) {
+            System.out.println("Error updating profile: " + e.getMessage());
+            return;
+        }
         System.out.println("Trainer profile updated successfully! Updated details: " + updatedTrainer);
     }
 }

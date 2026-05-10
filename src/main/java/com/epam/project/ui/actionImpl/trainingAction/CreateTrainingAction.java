@@ -42,7 +42,13 @@ public class CreateTrainingAction implements MenuAction {
         System.out.print("Enter Training Duration (minutes): ");
         int duration = Integer.parseInt(scanner.nextLine());
 
-        Training training = facade.createTraining(traineeUsername, trainerUsername, trainingName, trainingDate, duration);
+        Training training;
+        try {
+            training = facade.createTraining(traineeUsername, trainerUsername, trainingName, trainingDate, duration);
+        } catch (Exception e) {
+            System.out.println("Error creating training: " + e.getMessage());
+            return;
+        }
         System.out.println("Training created successfully! ID: " + training.getId());
     }
 }
