@@ -1,10 +1,11 @@
 package com.epam.project.service.impl;
 
-import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
-import com.epam.project.model.Trainee;
+import com.epam.project.dao.TrainingTypeDao;
+import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainer;
-import com.epam.project.model.enums.TrainingType;
+import com.epam.project.model.TrainingType;
+import com.epam.project.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,74 +29,107 @@ public class TrainerServiceImplTest {
     private TrainerDao trainerDao;
 
     @Mock
-    private TraineeDao traineeDao;
+    private UserDao userDao;
+
+    @Mock
+    private TrainingTypeDao trainingTypeDao;
 
     @InjectMocks
     private TrainerServiceImpl trainerService;
 
+    private User testUser;
+    private TrainingType testTrainingType;
     private Trainer testTrainer;
 
     @BeforeEach
     void setUp() {
-        testTrainer = new Trainer(1L, "Jane", "Smith", "Jane.Smith", "password456", true, TrainingType.YOGA);
+        testUser = new User(1L, "Jane", "Smith", "Jane.Smith", "password456", true);
+        testTrainingType = new TrainingType(1L, "YOGA");
+        testTrainer = new Trainer(1L, testTrainingType, testUser, new ArrayList<>(), null);
     }
+
+    // ============== createProfile() Tests ==============
 
     @Test
     void testCreateProfileSuccess() {
-        when(trainerDao.findAll()).thenReturn(Collections.emptyList());
-        when(traineeDao.findAll()).thenReturn(Collections.emptyList());
-
+        when(userDao.findUsernamesByPrefix("Jane.Smith")).thenReturn(Collections.emptyList());
+        when(trainingTypeDao.findByTypeName("YOGA")).thenReturn(Optional.of(testTrainingType));
         when(trainerDao.save(any(Trainer.class))).thenReturn(testTrainer);
 
-        Trainer result = trainerService.createProfile("Jane", "Smith", TrainingType.YOGA);
+        Trainer result = trainerService.createProfile("Jane", "Smith", "YOGA");
 
         assertNotNull(result);
-        assertEquals("Jane.Smith", result.getUsername());
-        assertEquals(TrainingType.YOGA, result.getSpecialization());
+        assertEquals("Jane.Smith", result.getUser().getUsername());
+        assertEquals("Jane", result.getUser().getFirstName());
+        assertEquals("Smith", result.getUser().getLastName());
+        assertEquals(testTrainingType, result.getSpecialization());
 
+        verify(userDao, times(1)).findUsernamesByPrefix("Jane.Smith");
+        verify(trainingTypeDao, times(1)).findByTypeName("YOGA");
         verify(trainerDao, times(1)).save(any(Trainer.class));
     }
 
     @Test
     void testCreateProfileWithExistingUsernames() {
-
-        Trainee existingTrainee = new Trainee(1L, "Jane", "Smith", "Jane.Smith", "pass", true, null, "Kyiv");
-
-
-        when(trainerDao.findAll()).thenReturn(Collections.emptyList());
-        when(traineeDao.findAll()).thenReturn(List.of(existingTrainee));
-
-        Trainer expectedTrainer = new Trainer(2L, "Jane", "Smith", "Jane.Smith1", "pass", true, TrainingType.YOGA);
+        when(userDao.findUsernamesByPrefix("Jane.Smith")).thenReturn(List.of("Jane.Smith"));
+        when(trainingTypeDao.findByTypeName("YOGA")).thenReturn(Optional.of(testTrainingType));
+        Trainer expectedTrainer = new Trainer(2L, testTrainingType, new User(2L, "Jane", "Smith", "Jane.Smith1", "password456", true), new ArrayList<>(), null);
         when(trainerDao.save(any(Trainer.class))).thenReturn(expectedTrainer);
 
-        Trainer result = trainerService.createProfile("Jane", "Smith", TrainingType.YOGA);
+        Trainer result = trainerService.createProfile("Jane", "Smith", "YOGA");
 
         assertNotNull(result);
+        assertEquals("Jane.Smith1", result.getUser().getUsername());
 
-        assertEquals("Jane.Smith1", result.getUsername());
+        verify(userDao, times(1)).findUsernamesByPrefix("Jane.Smith");
+        verify(trainingTypeDao, times(1)).findByTypeName("YOGA");
+        verify(trainerDao, times(1)).save(any(Trainer.class));
     }
 
+    @Test
+    void testCreateProfileTrainingTypeNotFound() {
+        when(userDao.findUsernamesByPrefix("Jane.Smith")).thenReturn(Collections.emptyList());
+        when(trainingTypeDao.findByTypeName("INVALID_TYPE")).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> trainerService.createProfile("Jane", "Smith", "INVALID_TYPE"));
+
+        assertEquals("Training Type not found: INVALID_TYPE", exception.getMessage());
+
+        verify(userDao, times(1)).findUsernamesByPrefix("Jane.Smith");
+        verify(trainingTypeDao, times(1)).findByTypeName("INVALID_TYPE");
+        verify(trainerDao, never()).save(any(Trainer.class));
+    }
+
+    // ============== selectProfile() Tests ==============
 
     @Test
     void testSelectProfileSuccess() {
-        when(trainerDao.findById(1L)).thenReturn(testTrainer);
+        when(trainerDao.findByUsername("Jane.Smith")).thenReturn(Optional.of(testTrainer));
 
-        Trainer result = trainerService.selectProfile(1L);
+        Trainer result = trainerService.selectProfile("Jane.Smith");
 
         assertNotNull(result);
-        assertEquals("Jane.Smith", result.getUsername());
-        verify(trainerDao, times(1)).findById(1L);
+        assertEquals("Jane.Smith", result.getUser().getUsername());
+        assertEquals("Jane", result.getUser().getFirstName());
+        assertEquals("Smith", result.getUser().getLastName());
+
+        verify(trainerDao, times(1)).findByUsername("Jane.Smith");
     }
 
     @Test
     void testSelectProfileNotFound() {
-        when(trainerDao.findById(999L)).thenReturn(null);
+        when(trainerDao.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
-        Trainer result = trainerService.selectProfile(999L);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> trainerService.selectProfile("nonexistent"));
 
-        assertNull(result);
-        verify(trainerDao, times(1)).findById(999L);
+        assertEquals("Trainer with username nonexistent not found", exception.getMessage());
+
+        verify(trainerDao, times(1)).findByUsername("nonexistent");
     }
+
+    // ============== updateProfile() Tests ==============
 
     @Test
     void testUpdateProfileSuccess() {
@@ -102,7 +138,37 @@ public class TrainerServiceImplTest {
         Trainer result = trainerService.updateProfile(testTrainer);
 
         assertNotNull(result);
-        assertEquals(TrainingType.YOGA, result.getSpecialization());
+        assertEquals("Jane.Smith", result.getUser().getUsername());
+        assertEquals(testTrainingType, result.getSpecialization());
+
         verify(trainerDao, times(1)).save(testTrainer);
+    }
+
+    // ============== getUnassignedActiveTrainers() Tests ==============
+
+    @Test
+    void testGetUnassignedActiveTrainersSuccess() {
+        List<Trainer> expectedTrainers = List.of(testTrainer);
+        when(trainerDao.findUnassignedActiveTrainers("John.Doe")).thenReturn(expectedTrainers);
+
+        List<Trainer> result = trainerService.getUnassignedActiveTrainers("John.Doe");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Jane.Smith", result.get(0).getUser().getUsername());
+
+        verify(trainerDao, times(1)).findUnassignedActiveTrainers("John.Doe");
+    }
+
+    @Test
+    void testGetUnassignedActiveTrainersEmptyList() {
+        when(trainerDao.findUnassignedActiveTrainers("John.Doe")).thenReturn(Collections.emptyList());
+
+        List<Trainer> result = trainerService.getUnassignedActiveTrainers("John.Doe");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(trainerDao, times(1)).findUnassignedActiveTrainers("John.Doe");
     }
 }

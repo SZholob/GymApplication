@@ -3,13 +3,11 @@ package com.epam.project.ui;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
-import com.epam.project.model.TrainingType;
 import com.epam.project.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Service

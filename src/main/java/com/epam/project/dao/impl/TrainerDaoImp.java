@@ -30,9 +30,9 @@ public class TrainerDaoImp implements TrainerDao {
     private final SessionFactory sessionFactory;
 
     public Trainer save(Trainer trainer) {
-        sessionFactory.getCurrentSession().persist(trainer);
-        logger.info("Saved trainer with username: {}", trainer.getUser().getUsername());
-        return trainer;
+        Trainer mergedTrainer = sessionFactory.getCurrentSession().merge(trainer);
+        logger.info("Saved trainer with username: {}", mergedTrainer.getUser().getUsername());
+        return mergedTrainer;
     }
 
     public Optional<Trainer> findByUsername(String username) {

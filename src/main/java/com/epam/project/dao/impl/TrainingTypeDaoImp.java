@@ -25,7 +25,6 @@ public class TrainingTypeDaoImp implements TrainingTypeDao {
 
     @Override
     public TrainingType save(TrainingType trainingType) {
-        sessionFactory.getCurrentSession().persist(trainingType);
-        return trainingType;
+        return sessionFactory.getCurrentSession().merge(trainingType);
     }
 }

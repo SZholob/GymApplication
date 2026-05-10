@@ -26,8 +26,7 @@ public class UserDaoImp implements UserDao {
 
     @Override
     public User save(User user) {
-        sessionFactory.getCurrentSession().persist(user);
-        return user;
+        return sessionFactory.getCurrentSession().merge(user);
     }
 
     @Override

@@ -27,9 +27,9 @@ public class TraineeDaoImp implements TraineeDao {
 
     @Override
     public Trainee save(Trainee trainee) {
-        sessionFactory.getCurrentSession().persist(trainee);
-        logger.info("Saved trainee with username: {}", trainee.getUser().getUsername());
-        return trainee;
+        Trainee mergedTrainee = sessionFactory.getCurrentSession().merge(trainee);
+        logger.info("Saved trainee with username: {}", mergedTrainee.getUser().getUsername());
+        return mergedTrainee;
     }
 
     @Override

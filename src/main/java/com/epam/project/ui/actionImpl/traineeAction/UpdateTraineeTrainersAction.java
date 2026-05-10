@@ -16,7 +16,7 @@ public class UpdateTraineeTrainersAction implements MenuAction {
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
 
-    @Override public String getCommandCode() { return "17"; }
+    @Override public String getCommandCode() { return "15"; }
     @Override public String getDescription() { return "Update Trainee's Trainers List"; }
 
     @Override

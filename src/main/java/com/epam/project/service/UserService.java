@@ -1,35 +1,7 @@
 package com.epam.project.service;
 
-import com.epam.project.dao.UserDao;
-import com.epam.project.model.User;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+public interface UserService {
+    void changePassword(String username, String newPassword);
 
-@Service
-@Transactional
-@RequiredArgsConstructor
-public class UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final UserDao userDao;
-
-    public void changePassword(String username, String newPassword) {
-        User user = userDao.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        user.setPassword(newPassword);
-        userDao.save(user);
-        logger.info("Password changed successfully for user: {}", username);
-    }
-
-    public void toggleActivation(String username) {
-        User user = userDao.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        Boolean currentStatus = user.getIsActive();
-        user.setIsActive(!currentStatus);
-        userDao.save(user);
-        logger.info("Activation toggled for user: {}. New status: {}", username, !currentStatus);
-    }
+    void toggleActivation(String username);
 }

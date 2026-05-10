@@ -29,9 +29,9 @@ public class TrainingDaoImp implements TrainingDao {
 
     @Override
     public Training save(Training training) {
-        sessionFactory.getCurrentSession().persist(training);
-        logger.info("Saved training: {}", training.getTrainingName());
-        return training;
+        Training mergedTraining = sessionFactory.getCurrentSession().merge(training);
+        logger.info("Saved training: {}", mergedTraining.getTrainingName());
+        return mergedTraining;
     }
 
     @Override

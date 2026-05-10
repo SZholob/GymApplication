@@ -16,7 +16,7 @@ public class ManageTraineeTrainersAction implements MenuAction {
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
 
-    @Override public String getCommandCode() { return "11"; }
+    @Override public String getCommandCode() { return "13"; }
     @Override public String getDescription() { return "Get Unassigned Trainers & Update Trainers List"; }
 
     @Override

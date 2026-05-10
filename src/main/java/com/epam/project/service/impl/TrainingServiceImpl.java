@@ -45,7 +45,16 @@ public class TrainingServiceImpl implements TrainingService {
         training.setTrainingDate(trainingDate);
         training.setTrainingDuration(trainingDuration);
 
+        if (!trainee.getTrainers().contains(trainer)) {
+            trainee.getTrainers().add(trainer);
+        }
+
+        if (!trainer.getTrainees().contains(trainee)) {
+            trainer.getTrainees().add(trainee);
+        }
+
         Training savedTraining = trainingDao.save(training);
+
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
 

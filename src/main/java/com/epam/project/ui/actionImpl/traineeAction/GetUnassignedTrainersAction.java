@@ -16,7 +16,7 @@ public class GetUnassignedTrainersAction implements MenuAction {
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
 
-    @Override public String getCommandCode() { return "16"; }
+    @Override public String getCommandCode() { return "14"; }
     @Override public String getDescription() { return "Get Active Trainers Not Assigned to Trainee"; }
 
     @Override
