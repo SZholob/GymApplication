@@ -6,6 +6,7 @@ import com.epam.project.ui.MenuAction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,21 +22,30 @@ public class GetTraineeTrainingsAction implements MenuAction {
 
     @Override
     public void execute() {
-        System.out.print("Enter your username: ");
+        System.out.print("Enter Trainee Username: ");
         String username = scanner.nextLine();
-        System.out.print("Enter your password: ");
+        System.out.print("Enter password: ");
         if (!facade.authenticate(username, scanner.nextLine())) {
             System.out.println("Auth failed."); return;
         }
 
-        System.out.println("--- Enter Filters (Press Enter to skip any filter) ---");
-        System.out.print("From Date (yyyy-mm-dd): ");
-        String fromStr = scanner.nextLine();
-        LocalDate from = fromStr.isEmpty() ? null : LocalDate.parse(fromStr);
+        System.out.println("--- Filters (Press Enter to skip) ---");
 
-        System.out.print("To Date (yyyy-mm-dd): ");
-        String toStr = scanner.nextLine();
-        LocalDate to = toStr.isEmpty() ? null : LocalDate.parse(toStr);
+        LocalDate from = null;
+        LocalDate to = null;
+
+        try {
+            System.out.print("From Date (yyyy-mm-dd): ");
+            String fromStr = scanner.nextLine();
+            from = fromStr.isEmpty() ? null : LocalDate.parse(fromStr);
+
+            System.out.print("To Date (yyyy-mm-dd): ");
+            String toStr = scanner.nextLine();
+            to = toStr.isEmpty() ? null : LocalDate.parse(toStr);
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date format. Returning to main menu.");
+            return;
+        }
 
         System.out.print("Trainer Username: ");
         String trainerUsername = scanner.nextLine();
@@ -46,10 +56,16 @@ public class GetTraineeTrainingsAction implements MenuAction {
         if (typeName.isEmpty()) typeName = null;
 
         List<Training> trainings = facade.getTraineeTrainings(username, from, to, trainerUsername, typeName);
-        if (trainings.isEmpty()) {
-            System.out.println("No trainings found matching these criteria.");
+        if (trainings == null || trainings.isEmpty()) {
+            System.out.println("No trainings found matching the criteria.");
         } else {
-            trainings.forEach(t -> System.out.println(t.getTrainingName() + " | Date: " + t.getTrainingDate()));
+            trainings.forEach(t -> System.out.println(
+                    "Training: " + t.getTrainingName() +
+                            " | Date: " + t.getTrainingDate() +
+                            " | Trainee: " + t.getTrainee().getUser().getUsername() +
+                            " | Trainer: " + t.getTrainer().getUser().getUsername() +
+                            " | Type: " + t.getTrainingType()
+            ));
         }
     }
 }
