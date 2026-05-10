@@ -31,8 +31,8 @@ public class GetTrainerTrainingsAction implements MenuAction {
         }
 
         System.out.println("--- Filters (Press Enter to skip) ---");
-        LocalDate from = null;
-        LocalDate to = null;
+        LocalDate from;
+        LocalDate to;
 
         try {
             System.out.print("From Date (yyyy-mm-dd): ");
