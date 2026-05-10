@@ -5,8 +5,6 @@ import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainee;
-import com.epam.project.model.Trainer;
-import com.epam.project.model.Training;
 import com.epam.project.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

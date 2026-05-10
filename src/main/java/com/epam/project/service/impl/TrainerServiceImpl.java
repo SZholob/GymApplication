@@ -1,9 +1,11 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.dao.TrainerDao;
+import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainer;
+import com.epam.project.model.Training;
 import com.epam.project.model.TrainingType;
 import com.epam.project.model.User;
 import com.epam.project.service.TrainerService;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +30,7 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
     private final UserDao userDao;
+    private final TrainingDao trainingDao;
     private final TrainingTypeDao trainingTypeDao;
 
     @Override
@@ -69,5 +73,10 @@ public class TrainerServiceImpl implements TrainerService {
     public List<Trainer> getUnassignedActiveTrainers(String traineeUsername) {
         logger.debug("Fetching unassigned active trainers for trainee: {}", traineeUsername);
         return trainerDao.findUnassignedActiveTrainers(traineeUsername);
+    }
+
+    @Override
+    public List<Training> getTrainerTrainingsList(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeUsername) {
+        return trainingDao.findTrainerTrainingsByCriteria(trainerUsername, fromDate, toDate, traineeUsername);
     }
 }

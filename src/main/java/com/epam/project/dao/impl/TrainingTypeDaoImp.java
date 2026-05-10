@@ -4,7 +4,6 @@ import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.model.TrainingType;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

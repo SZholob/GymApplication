@@ -17,7 +17,7 @@ public class GetTraineeTrainingsAction implements MenuAction {
     private final Scanner scanner = new Scanner(System.in);
 
     @Override public String getCommandCode() { return "10"; }
-    @Override public String getDescription() { return "Get Trainee Trainings (with filters)"; }
+    @Override public String getDescription() { return "Get Trainee Trainings List (with filters)"; }
 
     @Override
     public void execute() {

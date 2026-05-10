@@ -70,6 +70,10 @@ public class GymFacade {
         return trainerService.getUnassignedActiveTrainers(traineeUsername);
     }
 
+    public List<Training> getTrainerTrainings(String trainerUsername, LocalDate from, LocalDate to, String traineeUsername) {
+        return trainerService.getTrainerTrainingsList(trainerUsername, from, to, traineeUsername);
+    }
+
     // --- USER ---
     public void changeUserPassword(String username, String newPassword) {
         userService.changePassword(username, newPassword);

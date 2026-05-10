@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -30,25 +31,37 @@ public class GetTrainerTrainingsAction implements MenuAction {
         }
 
         System.out.println("--- Filters (Press Enter to skip) ---");
-        System.out.print("From Date (yyyy-mm-dd): ");
-        String fromStr = scanner.nextLine();
-        LocalDate from = fromStr.isEmpty() ? null : LocalDate.parse(fromStr);
+        LocalDate from = null;
+        LocalDate to = null;
 
-        System.out.print("To Date (yyyy-mm-dd): ");
-        String toStr = scanner.nextLine();
-        LocalDate to = toStr.isEmpty() ? null : LocalDate.parse(toStr);
+        try {
+            System.out.print("From Date (yyyy-mm-dd): ");
+            String fromStr = scanner.nextLine();
+            from = fromStr.isEmpty() ? null : LocalDate.parse(fromStr);
+
+            System.out.print("To Date (yyyy-mm-dd): ");
+            String toStr = scanner.nextLine();
+            to = toStr.isEmpty() ? null : LocalDate.parse(toStr);
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date format. Returning to main menu.");
+            return;
+        }
 
         System.out.print("Trainee Username: ");
         String traineeUsername = scanner.nextLine();
         if (traineeUsername.isEmpty()) traineeUsername = null;
 
-        List<Training> trainings = facade.selectTrainerProfile(username).getTrainings();
-
+        List<Training> trainings = facade.getTrainerTrainings(username, from, to, traineeUsername);
 
         if (trainings == null || trainings.isEmpty()) {
-            System.out.println("No trainings found.");
+            System.out.println("No trainings found matching the criteria.");
         } else {
-            trainings.forEach(t -> System.out.println(t.getTrainingName() + " | Trainee: " + t.getTrainee().getUser().getUsername()));
+            trainings.forEach(t -> System.out.println(
+                    "Training: " + t.getTrainingName() +
+                            " | Date: " + t.getTrainingDate() +
+                            " | Trainee: " + t.getTrainee().getUser().getUsername() +
+                            " | Trainer: " + t.getTrainer().getUser().getUsername()
+            ));
         }
     }
 }
