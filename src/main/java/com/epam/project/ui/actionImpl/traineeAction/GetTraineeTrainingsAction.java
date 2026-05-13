@@ -64,7 +64,8 @@ public class GetTraineeTrainingsAction implements MenuAction {
                             " | Date: " + t.getTrainingDate() +
                             " | Trainee: " + t.getTrainee().getUser().getUsername() +
                             " | Trainer: " + t.getTrainer().getUser().getUsername() +
-                            " | Type: " + t.getTrainingType()
+                            " | Type: " + t.getTrainingType().getTrainingTypeName() +
+                            " | Duration " + t.getTrainingDuration()
             ));
         }
     }

@@ -81,7 +81,14 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public void updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) {
-        Trainee trainee = selectProfile(traineeUsername);
+        Trainee trainee;
+        try {
+            trainee = selectProfile(traineeUsername);
+        } catch (IllegalArgumentException e) {
+            logger.error("Trainee not found: {}", traineeUsername);
+            throw e;
+        }
+
 
         List<Trainer> newTrainers = trainerUsernames.stream()
                 .map(tUsername -> trainerDao.findByUsername(tUsername)
