@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -89,13 +90,27 @@ public class TraineeServiceImpl implements TraineeService {
             throw e;
         }
 
-
         List<Trainer> newTrainers = trainerUsernames.stream()
                 .map(tUsername -> trainerDao.findByUsername(tUsername)
                         .orElseThrow(() -> new IllegalArgumentException("Trainer not found: " + tUsername)))
-                .toList();
+                .collect(Collectors.toList());
 
-        trainee.setTrainers(newTrainers);
+        if (trainee.getTrainers() == null) {
+            trainee.setTrainers(new java.util.ArrayList<>());
+        }
+
+        List<Trainer> existingTrainers = trainee.getTrainers();
+
+        for (Trainer newTrainer : newTrainers) {
+
+            boolean alreadyExists = existingTrainers.stream()
+                    .anyMatch(t -> t.getUser().getUsername().equals(newTrainer.getUser().getUsername()));
+
+            if (!alreadyExists) {
+                existingTrainers.add(newTrainer);
+            }
+        }
+
         traineeDao.save(trainee);
         logger.info("Updated trainers list for trainee: {}", traineeUsername);
     }
