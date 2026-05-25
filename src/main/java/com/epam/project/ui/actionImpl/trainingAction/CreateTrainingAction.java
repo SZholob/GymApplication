@@ -1,94 +1,54 @@
 package com.epam.project.ui.actionImpl.trainingAction;
 
-import com.epam.project.model.Trainee;
-import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
-import com.epam.project.model.enums.TrainingType;
 import com.epam.project.ui.GymFacade;
 import com.epam.project.ui.MenuAction;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Scanner;
 
-import static com.epam.project.ui.actionImpl.trainerAction.CreateTrainerAction.getTrainingType;
-
 @Component
+@RequiredArgsConstructor
 public class CreateTrainingAction implements MenuAction {
 
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
 
-    @Autowired
-    public CreateTrainingAction(GymFacade facade) {
-        this.facade = facade;
-    }
-
-    @Override
-    public String getCommandCode() {
-        return "8";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Create a new training session";
-    }
+    @Override public String getCommandCode() { return "12"; }
+    @Override public String getDescription() { return "Create Training"; }
 
     @Override
     public void execute() {
-        System.out.println("Creating a new training session...");
-        System.out.println("Please enter the trainer's ID: ");
-        Long trainerId = Long.parseLong(scanner.nextLine());
-        Trainer trainer = facade.selectTrainerProfile(trainerId);
-        if (trainer == null) {
-            System.out.println("Trainer with ID " + trainerId + " not found. Training creation cancelled.");
+        System.out.println("--- Create New Training ---");
+
+        System.out.print("Enter your username (authorization): ");
+        String authUsername = scanner.nextLine();
+        System.out.print("Enter your password: ");
+        if (!facade.authenticate(authUsername, scanner.nextLine())) {
+            System.out.println("Authentication failed. Access denied.");
             return;
         }
 
-        System.out.println("Please enter the trainee's ID: ");
-        Long traineeId = Long.parseLong(scanner.nextLine());
-        Trainee trainee = facade.selectTraineeProfile(traineeId);
-        if (trainee == null) {
-            System.out.println("Trainee with ID " + traineeId + " not found. Training creation cancelled.");
-            return;
-        }
-
-        System.out.println("Please enter the training name: ");
+        System.out.print("Enter Trainee Username: ");
+        String traineeUsername = scanner.nextLine();
+        System.out.print("Enter Trainer Username: ");
+        String trainerUsername = scanner.nextLine();
+        System.out.print("Enter Training Name: ");
         String trainingName = scanner.nextLine();
+        System.out.print("Enter Training Date (yyyy-mm-dd): ");
+        LocalDate trainingDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter Training Duration (minutes): ");
+        int duration = Integer.parseInt(scanner.nextLine());
 
-        TrainingType specialization = getTrainingType(scanner);
-        if (specialization == null) {
-            System.out.println("Invalid choice. Training creation cancelled.");
-            return;
-        }
-
-        System.out.println("Please enter the training date (yyyy-mm-dd): ");
-        Date trainingDate;
+        Training training;
         try {
-            trainingDate = new SimpleDateFormat("yyyy-MM-dd").parse(scanner.nextLine());
-        } catch (ParseException e) {
-            System.out.println("Invalid date format. Please use yyyy-MM-dd. Training creation cancelled.");
+            training = facade.createTraining(traineeUsername, trainerUsername, trainingName, trainingDate, duration);
+        } catch (Exception e) {
+            System.out.println("Error creating training: " + e.getMessage());
             return;
         }
-
-        System.out.println("Please enter the training duration in minutes: ");
-        int trainingDuration;
-        try {
-            trainingDuration = Integer.parseInt(scanner.nextLine());
-            if (trainingDuration < 0) {
-                throw new NumberFormatException("Duration cannot be negative.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid duration format. Please enter a number. Training creation cancelled.");
-            return;
-        }
-        Training training = facade.createTraining(trainerId, traineeId, trainingName, specialization, trainingDate, trainingDuration);
-        System.out.println("Training session created successfully! \n" +
-                "Details: " + training);
-
+        System.out.println("Training created successfully! ID: " + training.getId());
     }
-
 }

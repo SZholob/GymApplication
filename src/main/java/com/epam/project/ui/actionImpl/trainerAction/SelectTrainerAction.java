@@ -3,21 +3,17 @@ package com.epam.project.ui.actionImpl.trainerAction;
 import com.epam.project.model.Trainer;
 import com.epam.project.ui.GymFacade;
 import com.epam.project.ui.MenuAction;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
 
 @Component
+@RequiredArgsConstructor
 public class SelectTrainerAction implements MenuAction {
 
     private final GymFacade facade;
     private final Scanner scanner = new Scanner(System.in);
-
-    @Autowired
-    public SelectTrainerAction(GymFacade facade) {
-        this.facade = facade;
-    }
 
     @Override
     public String getCommandCode() {
@@ -32,13 +28,23 @@ public class SelectTrainerAction implements MenuAction {
     @Override
     public void execute() {
         System.out.println("Selecting a trainer profile...");
-        System.out.println("Please enter the trainer's ID: ");
-        Long id = Long.parseLong(scanner.nextLine());
-        Trainer trainer = facade.selectTrainerProfile(id);
-        if (trainer != null) {
+
+        System.out.println("Please enter the trainer's username: ");
+        String username = scanner.nextLine();
+
+        System.out.println("Please enter the trainer's password: ");
+        String password = scanner.nextLine();
+
+        if (!facade.authenticate(username, password)) {
+            System.out.println("Authentication failed. Access denied.");
+            return;
+        }
+
+        try {
+            Trainer trainer = facade.selectTrainerProfile(username);
             System.out.println("Trainer profile found: " + trainer);
-        } else {
-            System.out.println("Trainer not found with ID: " + id);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }

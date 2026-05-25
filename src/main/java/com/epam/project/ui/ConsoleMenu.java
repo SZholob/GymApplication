@@ -3,10 +3,7 @@ package com.epam.project.ui;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 public class ConsoleMenu {
@@ -47,9 +44,10 @@ public class ConsoleMenu {
     private void displayMenu() {
         System.out.println("\n--- Gym CRM Menu ---");
 
-        for (MenuAction action : actionMap.values()) {
-            System.out.println(action.getCommandCode() + ". " + action.getDescription());
-        }
+        actionMap.values().stream()
+                .sorted(Comparator.comparingInt(action -> Integer.parseInt(action.getCommandCode())))
+                .forEach(action -> System.out.println(action.getCommandCode() + ". " + action.getDescription()));
+
         System.out.println("0. Exit");
     }
 }

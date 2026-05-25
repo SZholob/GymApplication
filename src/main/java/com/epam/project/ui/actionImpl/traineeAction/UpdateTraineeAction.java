@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -35,47 +37,63 @@ public class UpdateTraineeAction implements MenuAction {
     @Override
     public void execute() {
         System.out.println("Updating a trainee profile...");
-        System.out.println("Please enter the trainee's ID: ");
-        long id;
-        try{
-            id = Long.parseLong(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format. Please enter a valid numeric ID.");
+
+        System.out.println("Please enter the trainee's username: ");
+        String username = scanner.nextLine();
+
+        System.out.println("Please enter the trainee's password: ");
+        String password = scanner.nextLine();
+
+        if (!facade.authenticate(username, password)) {
+            System.out.println("Authentication failed. Please check your username and password.");
             return;
         }
 
-        Trainee trainee = facade.selectTraineeProfile(id);
-        if (trainee == null) {
-            System.out.println("Trainee not found with ID: " + id);
+        Trainee trainee;
+        try {
+            trainee = facade.selectTraineeProfile(username);
+        } catch (Exception e) {
+            System.out.println("Error retrieving trainee profile: " + e.getMessage());
             return;
         }
-        System.out.println("Current trainee details: " + trainee);
-        System.out.println("Please enter the trainee's new first name (or press Enter to keep current): ");
+
+        System.out.println("Current profile: " + trainee);
+
+        System.out.println("Enter new first name (or press Enter to keep current): ");
         String firstName = scanner.nextLine();
         if (!firstName.isEmpty()) {
-            trainee.setFirstName(firstName);
+            trainee.getUser().setFirstName(firstName);
         }
-        System.out.println("Please enter the trainee's new last name (or press Enter to keep current): ");
+
+        System.out.println("Enter new last name (or press Enter to keep current): ");
         String lastName = scanner.nextLine();
         if (!lastName.isEmpty()) {
-            trainee.setLastName(lastName);
+            trainee.getUser().setLastName(lastName);
         }
-        System.out.println("Please enter the trainee's new date of birth (yyyy-mm-dd) (or press Enter to keep current): ");
+
+        System.out.println("Enter new date of birth (yyyy-MM-dd) (or press Enter to keep current): ");
         String dobInput = scanner.nextLine();
         if (!dobInput.isEmpty()) {
             try {
-                Date dateOfBirth = new SimpleDateFormat("yyyy-MM-dd").parse(dobInput);
+                LocalDate dateOfBirth = LocalDate.parse(dobInput);
                 trainee.setDateOfBirth(dateOfBirth);
-            } catch (ParseException e) {
-                System.out.println("Invalid date format. Please use yyyy-MM-dd. Keeping current date of birth.");
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Keeping current date of birth.");
             }
         }
+
         System.out.println("Please enter the trainee's new address (or press Enter to keep current): ");
         String address = scanner.nextLine();
         if (!address.isEmpty()) {
             trainee.setAddress(address);
         }
-        Trainee updatedTrainee = facade.updateTraineeProfile(trainee);
-        System.out.println("Trainee profile updated successfully! Updated details: " + updatedTrainee);
+        Trainee updatedTrainee;
+        try {
+            updatedTrainee = facade.updateTraineeProfile(trainee);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error updating trainee profile: " + e.getMessage());
+            return;
+        }
+        System.out.println("Trainee profile updated successfully: " + updatedTrainee);
     }
 }

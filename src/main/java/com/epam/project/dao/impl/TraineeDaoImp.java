@@ -2,63 +2,59 @@ package com.epam.project.dao.impl;
 
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.model.Trainee;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
+@Transactional
 @Repository
+@RequiredArgsConstructor
 public class TraineeDaoImp implements TraineeDao {
 
     private static final Logger logger = LoggerFactory.getLogger(TraineeDaoImp.class);
-    private Map<Long, Trainee> traineeStorage;
 
-    @Autowired
-    public void setTraineeStorage(Map<Long, Trainee> traineeStorage) {
-        this.traineeStorage = traineeStorage;
-    }
+    private static final String FIND_BY_USERNAME_QUERY = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
+    private static final String FIND_ALL_QUERY = "FROM Trainee";
 
+    private final SessionFactory sessionFactory;
+
+    @Override
     public Trainee save(Trainee trainee) {
-        if (trainee.getId() == null) {
-            long maxId = traineeStorage.keySet()
-                    .stream()
-                    .max(Long::compare)
-                    .orElse(0L);
-
-            trainee.setId(maxId + 1);
-        }
-        traineeStorage.put(trainee.getId(), trainee);
-        logger.info("Saved trainee with name {}. Details: {}",
-                trainee.getUsername(), trainee);
-        return trainee;
+        Trainee mergedTrainee = sessionFactory.getCurrentSession().merge(trainee);
+        logger.info("Saved trainee with username: {}", mergedTrainee.getUser().getUsername());
+        return mergedTrainee;
     }
 
-    public Trainee findById(Long id) {
-        Trainee trainee = traineeStorage.get(id);
-        Optional.ofNullable(trainee)
-                .ifPresentOrElse(
-                        t -> logger.debug("Found trainee with id {}, user name is: {}", id, t),
-                        () -> logger.warn("Trainee with id {} not found", id)
-                );
-        return trainee;
+    @Override
+    public Optional<Trainee> findByUsername(String username) {
+        return sessionFactory.getCurrentSession()
+                .createQuery(FIND_BY_USERNAME_QUERY, Trainee.class)
+                .setParameter("username", username)
+                .uniqueResultOptional();
     }
 
+    @Override
     public List<Trainee> findAll() {
-        List<Trainee> trainees = new ArrayList<>(traineeStorage.values());
-        logger.debug("Found {} trainees", trainees.size());
-        return trainees;
+        return sessionFactory.getCurrentSession()
+                .createQuery(FIND_ALL_QUERY, Trainee.class)
+                .getResultList();
     }
 
-    public void delete(Long id) {
-        Trainee removed = traineeStorage.remove(id);
-        Optional.ofNullable(removed).ifPresentOrElse(
-                t -> logger.info("Deleted trainee with id {}, user name is: {}", id, t.getUsername()),
-                () -> logger.warn("Trainee with id {} not found for deletion", id)
+    @Override
+    public void deleteByUsername(String username) {
+        Optional<Trainee> traineeOpt = findByUsername(username);
+        traineeOpt.ifPresentOrElse(
+                trainee -> {
+                    sessionFactory.getCurrentSession().remove(trainee);
+                    logger.info("Deleted trainee with username: {}", username);
+                },
+                () -> logger.warn("Trainee with username {} not found for deletion", username)
         );
     }
 }

@@ -1,13 +1,11 @@
 package com.epam.project.service;
 
 import com.epam.project.model.Training;
-import com.epam.project.model.enums.TrainingType;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public interface TrainingService {
 
-    Training createTraining(Long trainerId, Long traineeId, String trainingName, TrainingType trainingType, Date trainingDate, int trainingDuration);
+    Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration);
 
-    Training selectTraining(Long id);
 }

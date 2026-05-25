@@ -2,54 +2,54 @@ package com.epam.project.dao.impl;
 
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.model.Trainer;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
+@Transactional
 @Repository
+@RequiredArgsConstructor
 public class TrainerDaoImp implements TrainerDao {
 
     private static final Logger logger = LoggerFactory.getLogger(TrainerDaoImp.class);
 
-    private Map<Long, Trainer> trainerStorage;
+    private static final String FIND_BY_USERNAME_QUERY = "FROM Trainer t JOIN FETCH t.user u WHERE u.username = :username";
+    private static final String FIND_UNASSIGNED_ACTIVE_TRAINERS_QUERY = "SELECT t FROM Trainer t WHERE t.user.isActive = true AND t NOT IN " +
+            "(SELECT tr FROM Trainee trainee JOIN trainee.trainers tr WHERE trainee.user.username = :username)";
+    private static final String FIND_ALL_QUERY = "FROM Trainer";
 
-    @Autowired
-    public void setTrainerStorage(Map<Long, Trainer> trainerStorage) {
-        this.trainerStorage = trainerStorage;
-    }
+    private final SessionFactory sessionFactory;
 
     public Trainer save(Trainer trainer) {
-        if (trainer.getId() == null) {
-            long maxId = trainerStorage.keySet()
-                    .stream()
-                    .max(Long::compare)
-                    .orElse(0L);
-            trainer.setId(maxId + 1);
-        }
-        trainerStorage.put(trainer.getId(), trainer);
-        logger.info("Saved trainer with name {}. Details: {}",
-                trainer.getUsername(), trainer.getUsername());
-        return trainer;
+        Trainer mergedTrainer = sessionFactory.getCurrentSession().merge(trainer);
+        logger.info("Saved trainer with username: {}", mergedTrainer.getUser().getUsername());
+        return mergedTrainer;
     }
 
-    public Trainer findById(Long id) {
-        Trainer trainer = trainerStorage.get(id);
-        Optional.ofNullable(trainer).ifPresentOrElse(
-                t -> logger.debug("Found trainer with id {}, user name is: {}", id, t),
-                () -> logger.debug("Trainee with id {} not found", id)
-        );
-        return trainer;
+    public Optional<Trainer> findByUsername(String username) {
+        return sessionFactory.getCurrentSession()
+                .createQuery(FIND_BY_USERNAME_QUERY, Trainer.class)
+                .setParameter("username", username)
+                .uniqueResultOptional();
     }
 
     public List<Trainer> findAll() {
-        List<Trainer> trainers = new ArrayList<>(trainerStorage.values());
-        logger.debug("Found {} trainers", trainers.size());
-        return trainers;
+        return sessionFactory.getCurrentSession()
+                .createQuery(FIND_ALL_QUERY, Trainer.class)
+                .getResultList();
+    }
+
+    @Override
+    public List<Trainer> findUnassignedActiveTrainers(String traineeUsername) {
+        return sessionFactory.getCurrentSession()
+                .createQuery(FIND_UNASSIGNED_ACTIVE_TRAINERS_QUERY, Trainer.class)
+                .setParameter("username", traineeUsername)
+                .getResultList();
     }
 }
