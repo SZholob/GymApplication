@@ -8,6 +8,8 @@ import com.epam.project.model.Trainer;
 import com.epam.project.service.AuthenticationService;
 import com.epam.project.service.TraineeService;
 import com.epam.project.service.TrainerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Tag(name = "Authentication", description = "Endpoints for login and registration")
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
@@ -23,6 +26,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/trainee/register")
+    @Operation(summary = "Register a new Trainee", description = "Creates a new trainee profile and generates credentials")
     public ResponseEntity<RegistrationResponse> registerTrainee(@Valid @RequestBody TraineeRegistrationRequest request) {
         Trainee trainee = traineeService.createProfile(
                 request.firstName(),
@@ -34,6 +38,7 @@ public class AuthController {
     }
 
     @PostMapping("/trainer/register")
+    @Operation(summary = "Register a new Trainer", description = "Creates a new trainer profile and generates credentials")
     public ResponseEntity<RegistrationResponse> registerTrainer(@Valid @RequestBody TrainerRegistrationRequest request) {
         Trainer trainer = trainerService.createProfile(
                 request.firstName(),
@@ -44,6 +49,7 @@ public class AuthController {
     }
 
     @GetMapping("/login")
+    @Operation(summary = "Login", description = "Authenticates a user and returns a success message if credentials are valid")
     public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
         if (authenticationService.authenticate(username, password)) {
             return ResponseEntity.ok("200 OK");
