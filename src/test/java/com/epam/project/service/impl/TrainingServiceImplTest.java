@@ -3,6 +3,7 @@ package com.epam.project.service.impl;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
+import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
@@ -18,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +38,9 @@ public class TrainingServiceImplTest {
 
     @Mock
     private TrainerDao trainerDao;
+
+    @Mock
+    private TrainingTypeDao trainingTypeDao;
 
     @Mock
     private ValidationService validationService;
@@ -95,6 +101,7 @@ public class TrainingServiceImplTest {
         verify(traineeDao, times(1)).findByUsername("John.Doe");
         verify(trainerDao, times(1)).findByUsername("Jane.Smith");
         verify(trainingDao, times(1)).save(any(Training.class));
+        verify(validationService, times(1)).validate(any(Training.class));
     }
 
     @Test
@@ -180,5 +187,32 @@ public class TrainingServiceImplTest {
         verify(traineeDao, times(1)).findByUsername("John.Doe");
         verify(trainerDao, times(1)).findByUsername("Jane.Smith");
         verify(trainingDao, times(1)).save(any(Training.class));
+    }
+
+    @Test
+    void testGetTrainingTypesSuccess() {
+        TrainingType tt = new TrainingType(1L, "YOGA");
+        List<TrainingType> expected = List.of(tt);
+        when(trainingTypeDao.findAll()).thenReturn(expected);
+
+        List<TrainingType> result = trainingService.getTrainingTypes();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("YOGA", result.get(0).getTrainingTypeName());
+
+        verify(trainingTypeDao, times(1)).findAll();
+    }
+
+    @Test
+    void testGetTrainingTypesEmpty() {
+        when(trainingTypeDao.findAll()).thenReturn(Collections.emptyList());
+
+        List<TrainingType> result = trainingService.getTrainingTypes();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(trainingTypeDao, times(1)).findAll();
     }
 }

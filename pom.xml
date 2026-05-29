@@ -15,7 +15,7 @@
     <spring.version>6.2.7</spring.version>
     <slf4j.version>2.0.12</slf4j.version>
     <junit.version>5.10.2</junit.version>
-    <mockito.version>5.10.0</mockito.version>
+    <mockito.version>5.20.0</mockito.version>
   </properties>
 
   <dependencies>
@@ -109,6 +109,18 @@
       <version>${spring.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <version>6.0.0</version>
@@ -144,6 +156,14 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>2.15.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.9.0</version>
+      <scope>test</scope>
+    </dependency>
+
 
   </dependencies>
   <build>
