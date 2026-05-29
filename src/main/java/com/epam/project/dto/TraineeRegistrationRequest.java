@@ -11,7 +11,7 @@ public record TraineeRegistrationRequest(
         @NotBlank(message = "Last name is required")
         String lastName,
 
-        LocalDate dateOfBirth, // Опціональне поле
+        LocalDate dateOfBirth,
 
         String address
 ) { }

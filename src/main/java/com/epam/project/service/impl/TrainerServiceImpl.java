@@ -4,14 +4,12 @@ import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.dao.UserDao;
-import com.epam.project.model.Trainer;
-import com.epam.project.model.Training;
-import com.epam.project.model.TrainingType;
-import com.epam.project.model.User;
+import com.epam.project.model.*;
 import com.epam.project.service.TrainerService;
 import com.epam.project.service.UserUtils;
 import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -71,8 +69,15 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional(readOnly = true)
     public Trainer selectProfile(String username) {
-        return trainerDao.findByUsername(username)
+        Trainer trainer = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer with username " + username + " not found"));
+
+        Hibernate.initialize(trainer.getTrainees());
+        for (Trainee trainee : trainer.getTrainees()) {
+            Hibernate.initialize(trainee.getUser());
+        }
+
+        return trainer;
     }
 
     @Override

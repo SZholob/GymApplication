@@ -27,14 +27,18 @@ public class TraineeController {
 
     @GetMapping("/{username}")
     @Operation(summary = "Get Trainee Profile", description = "Retrieves the profile information of a trainee by their username")
-    public ResponseEntity<TraineeProfileResponse> getProfile(@PathVariable String username) {
+    public ResponseEntity<TraineeProfileResponse> getProfile(@PathVariable("username") String username) {
         Trainee trainee = traineeService.selectProfile(username);
         return ResponseEntity.ok(mapToResponse(trainee));
     }
 
     @PutMapping("/{username}")
     @Operation(summary = "Update Trainee Profile", description = "Updates the profile information of a trainee by their username")
-    public ResponseEntity<TraineeProfileResponse> updateProfile(@PathVariable String username, @Valid @RequestBody UpdateTraineeRequest req) {
+    public ResponseEntity<TraineeProfileResponse> updateProfile(@PathVariable String username
+            , @Valid @RequestBody UpdateTraineeRequest req) {
+
+        if (!username.equals(req.username())) throw new IllegalArgumentException("Username mismatch");
+
         Trainee trainee = traineeService.selectProfile(username);
         trainee.getUser().setFirstName(req.firstName());
         trainee.getUser().setLastName(req.lastName());
@@ -55,11 +59,8 @@ public class TraineeController {
 
     @PatchMapping("/{username}/status")
     @Operation(summary = "Toggle Trainee Activation", description = "Toggles the activation status of a trainee by their username")
-    public ResponseEntity<String> toggleActivation(@PathVariable String username, @Valid @RequestBody ToggleActivationRequest req) {
-        Trainee trainee = traineeService.selectProfile(username);
-        if (!trainee.getUser().getIsActive().equals(req.isActive())) {
-            userService.toggleActivation(username);
-        }
+    public ResponseEntity<String> toggleActivation(@PathVariable String username) {
+        userService.toggleActivation(username);
         return ResponseEntity.ok("200 OK");
     }
 

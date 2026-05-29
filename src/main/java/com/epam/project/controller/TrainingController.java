@@ -27,7 +27,6 @@ public class TrainingController {
     private final TrainingService trainingService;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
-    private final TrainingTypeDao trainingTypeDao;
 
     @PostMapping
     @Operation(summary = "Create a new training session", description = "Creates a new training session between a trainee and a trainer with the specified details.")
@@ -71,9 +70,9 @@ public class TrainingController {
     @GetMapping("/types")
     @Operation(summary = "Get all training types", description = "Retrieves a list of all available training types.")
     public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
-        List<TrainingTypeResponse> types = trainingTypeDao.findAll().stream()
+        List<TrainingTypeResponse> types = trainingService.getTrainingTypes().stream()
                 .map(t -> new TrainingTypeResponse(t.getId(), t.getTrainingTypeName()))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(types);
     }
 }

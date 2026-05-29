@@ -50,7 +50,9 @@ public class AuthController {
 
     @GetMapping("/login")
     @Operation(summary = "Login", description = "Authenticates a user and returns a success message if credentials are valid")
-    public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<String> login(
+            @RequestParam("username") String username,
+            @RequestParam("password") String password) {
         if (authenticationService.authenticate(username, password)) {
             return ResponseEntity.ok("200 OK");
         } else {

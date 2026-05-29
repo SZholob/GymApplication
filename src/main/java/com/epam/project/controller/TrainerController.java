@@ -25,30 +25,35 @@ public class TrainerController {
 
     @GetMapping("/{username}")
     @Operation(summary = "Get Trainer Profile", description = "Retrieves the profile information of a trainer by their username")
-    public ResponseEntity<TrainerProfileResponse> getProfile(@PathVariable String username) {
+    public ResponseEntity<TrainerProfileResponse> getProfile(@PathVariable("username") String username) {
         Trainer trainer = trainerService.selectProfile(username);
         return ResponseEntity.ok(mapToResponse(trainer));
     }
 
     @PutMapping("/{username}")
     @Operation(summary = "Update Trainer Profile", description = "Updates the profile information of a trainer by their username")
-    public ResponseEntity<TrainerProfileResponse> updateProfile(@PathVariable String username, @Valid @RequestBody UpdateTrainerRequest req) {
+    public ResponseEntity<TrainerProfileResponse> updateProfile(@PathVariable String username
+            , @Valid @RequestBody UpdateTrainerRequest req) {
+
+        if (!username.equals(req.username())) throw new IllegalArgumentException("Username mismatch");
+
         Trainer trainer = trainerService.selectProfile(username);
         trainer.getUser().setFirstName(req.firstName());
         trainer.getUser().setLastName(req.lastName());
+
         trainer.getUser().setIsActive(req.isActive());
 
-        Trainer updated = trainerService.updateProfile(trainer);
-        return ResponseEntity.ok(mapToResponse(updated));
+        trainerService.updateProfile(trainer);
+
+        Trainer fullyInitializedTrainer = trainerService.selectProfile(username);
+
+        return ResponseEntity.ok(mapToResponse(fullyInitializedTrainer));
     }
 
     @PatchMapping("/{username}/status")
     @Operation(summary = "Toggle Trainer Activation", description = "Toggles the activation status of a trainer by their username")
-    public ResponseEntity<String> toggleActivation(@PathVariable String username, @Valid @RequestBody ToggleActivationRequest req) {
-        Trainer trainer = trainerService.selectProfile(username);
-        if (!trainer.getUser().getIsActive().equals(req.isActive())) {
-            userService.toggleActivation(username);
-        }
+    public ResponseEntity<String> toggleActivation(@PathVariable("username") String username) {
+        userService.toggleActivation(username);
         return ResponseEntity.ok("200 OK");
     }
 
