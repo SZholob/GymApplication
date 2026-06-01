@@ -2,11 +2,13 @@ package com.epam.project.dao.impl;
 
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.model.Training;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +26,18 @@ public class TrainingDaoImp implements TrainingDao {
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingDaoImp.class);
 
-    private final SessionFactory sessionFactory;
+    private final EntityManager entityManager;
 
     @Override
     public Training save(Training training) {
-        Training mergedTraining = sessionFactory.getCurrentSession().merge(training);
+        Training mergedTraining = entityManager.unwrap(Session.class).merge(training);
         logger.info("Saved training: {}", mergedTraining.getTrainingName());
         return mergedTraining;
     }
 
     @Override
     public List<Training> findTraineeTrainingsByCriteria(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerUsername, String trainingTypeName) {
-        CriteriaBuilder cb = sessionFactory.getCurrentSession().getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
         CriteriaQuery<Training> cq = cb.createQuery(Training.class);
         Root<Training> root = cq.from(Training.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -57,12 +59,12 @@ public class TrainingDaoImp implements TrainingDao {
 
         cq.where(predicates.toArray(new Predicate[0]));
 
-        return sessionFactory.getCurrentSession().createQuery(cq).getResultList();
+        return entityManager.unwrap(Session.class).createQuery(cq).getResultList();
     }
 
     @Override
     public List<Training> findTrainerTrainingsByCriteria(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeUsername) {
-        CriteriaBuilder cb = sessionFactory.getCurrentSession().getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
         CriteriaQuery<Training> cq = cb.createQuery(Training.class);
         Root<Training> root = cq.from(Training.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -81,6 +83,6 @@ public class TrainingDaoImp implements TrainingDao {
 
         cq.where(predicates.toArray(new Predicate[0]));
 
-        return sessionFactory.getCurrentSession().createQuery(cq).getResultList();
+        return entityManager.unwrap(Session.class).createQuery(cq).getResultList();
     }
 }
