@@ -59,12 +59,17 @@ public class TrainingServiceImpl implements TrainingService {
         }
         validationService.validate(training);
 
+        long startTime = System.currentTimeMillis();
+
         Training savedTraining = trainingDao.save(training);
+
+        long endTime = System.currentTimeMillis();
+        gymMetrics.recordTrainingCreationTime(endTime - startTime);
 
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
 
-        gymMetrics.incrementTrainingCount();
+        gymMetrics.incrementTrainingCount(training.getTrainingType().getTrainingTypeName());
 
         return savedTraining;
     }
