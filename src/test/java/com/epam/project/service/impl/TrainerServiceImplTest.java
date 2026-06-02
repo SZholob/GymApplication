@@ -1,9 +1,11 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.dao.TrainerDao;
+import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.dao.UserDao;
 import com.epam.project.model.Trainer;
+import com.epam.project.model.Training;
 import com.epam.project.model.TrainingType;
 import com.epam.project.model.User;
 import com.epam.project.service.ValidationService;
@@ -14,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +37,9 @@ public class TrainerServiceImplTest {
 
     @Mock
     private TrainingTypeDao trainingTypeDao;
+
+    @Mock
+    private TrainingDao trainingDao;
 
     @Mock
     private ValidationService validationService;
@@ -71,6 +77,7 @@ public class TrainerServiceImplTest {
         verify(userDao, times(1)).findUsernamesByPrefix("Jane.Smith");
         verify(trainingTypeDao, times(1)).findByTypeName("YOGA");
         verify(trainerDao, times(1)).save(any(Trainer.class));
+        verify(validationService, times(2)).validate(any());
     }
 
     @Test
@@ -96,7 +103,7 @@ public class TrainerServiceImplTest {
         when(trainingTypeDao.findByTypeName("INVALID_TYPE")).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> trainerService.createProfile("Jane", "Smith", "INVALID_TYPE"));
+                () -> trainerService.createProfile("Jane", "Smith", "INVALID_TYPE"));
 
         assertEquals("Training Type not found: INVALID_TYPE", exception.getMessage());
 
@@ -126,7 +133,7 @@ public class TrainerServiceImplTest {
         when(trainerDao.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> trainerService.selectProfile("nonexistent"));
+                () -> trainerService.selectProfile("nonexistent"));
 
         assertEquals("Trainer with username nonexistent not found", exception.getMessage());
 
@@ -146,6 +153,8 @@ public class TrainerServiceImplTest {
         assertEquals(testTrainingType, result.getSpecialization());
 
         verify(trainerDao, times(1)).save(testTrainer);
+        verify(validationService, times(1)).validate(testTrainer.getUser());
+        verify(validationService, times(1)).validate(testTrainer);
     }
 
     // ============== getUnassignedActiveTrainers() Tests ==============
@@ -174,5 +183,38 @@ public class TrainerServiceImplTest {
         assertTrue(result.isEmpty());
 
         verify(trainerDao, times(1)).findUnassignedActiveTrainers("John.Doe");
+    }
+
+    // ============== getTrainerTrainingsList() Tests ==============
+
+    @Test
+    void testGetTrainerTrainingsListSuccess() {
+        Training t = new Training();
+        t.setTrainingName("Session A");
+        t.setTrainingDate(LocalDate.of(2024, 5, 10));
+        t.setTrainer(testTrainer);
+
+        List<Training> expected = List.of(t);
+        when(trainingDao.findTrainerTrainingsByCriteria("Jane.Smith", null, null, "John.Doe")).thenReturn(expected);
+
+        List<Training> result = trainerService.getTrainerTrainingsList("Jane.Smith", null, null, "John.Doe");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Session A", result.get(0).getTrainingName());
+
+        verify(trainingDao, times(1)).findTrainerTrainingsByCriteria("Jane.Smith", null, null, "John.Doe");
+    }
+
+    @Test
+    void testGetTrainerTrainingsListEmpty() {
+        when(trainingDao.findTrainerTrainingsByCriteria("Jane.Smith", null, null, null)).thenReturn(Collections.emptyList());
+
+        List<Training> result = trainerService.getTrainerTrainingsList("Jane.Smith", null, null, null);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(trainingDao, times(1)).findTrainerTrainingsByCriteria("Jane.Smith", null, null, null);
     }
 }

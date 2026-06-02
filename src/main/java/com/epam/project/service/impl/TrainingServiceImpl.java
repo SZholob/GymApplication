@@ -3,9 +3,11 @@ package com.epam.project.service.impl;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
+import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
+import com.epam.project.model.TrainingType;
 import com.epam.project.service.TrainingService;
 import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Transactional
@@ -26,6 +29,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingDao trainingDao;
     private final TraineeDao traineeDao;
     private final TrainerDao trainerDao;
+    private final TrainingTypeDao trainingTypeDao;
     private final ValidationService validationService;
 
     public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration) {
@@ -60,4 +64,12 @@ public class TrainingServiceImpl implements TrainingService {
 
         return savedTraining;
     }
+
+    @Override
+    public List<TrainingType> getTrainingTypes() {
+        logger.info("Fetching all training types");
+        return trainingTypeDao.findAll();
+    }
+
+
 }

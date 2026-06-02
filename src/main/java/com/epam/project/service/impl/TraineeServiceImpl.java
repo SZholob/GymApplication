@@ -12,6 +12,7 @@ import com.epam.project.service.TraineeService;
 import com.epam.project.service.UserUtils;
 import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -75,8 +76,16 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional(readOnly = true)
     public Trainee selectProfile(String username) {
-        return traineeDao.findByUsername(username)
+        Trainee trainee = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainee with username " + username + " not found"));
+
+        Hibernate.initialize(trainee.getTrainers());
+        for (Trainer trainer : trainee.getTrainers()) {
+            Hibernate.initialize(trainer.getUser());
+            Hibernate.initialize(trainer.getSpecialization());
+        }
+
+        return trainee;
     }
 
 
