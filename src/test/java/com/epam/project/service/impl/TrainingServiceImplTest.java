@@ -1,5 +1,6 @@
 package com.epam.project.service.impl;
 
+import com.epam.project.actuator.GymMetrics;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
@@ -44,6 +45,9 @@ public class TrainingServiceImplTest {
 
     @Mock
     private ValidationService validationService;
+
+    @Mock
+    private GymMetrics gymMetrics;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;
