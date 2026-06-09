@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @Tag(name = "Authentication", description = "Endpoints for login and registration")
 @RequestMapping("/api/auth")
@@ -49,19 +51,12 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    @Operation(summary = "Login", description = "Authenticates a user and returns a success message if credentials are valid")
-    public ResponseEntity<String> login(
+    @Operation(summary = "Login", description = "Authenticates a user and returns a JWT Bearer token")
+    public ResponseEntity<Map<String, String>> login(
             @RequestParam("username") String username,
             @RequestParam("password") String password) {
-       try {
-           boolean isAuthenticated = authenticationService.authenticate(username, password);
-           if (isAuthenticated) {
-               return ResponseEntity.ok("Login successful");
-           } else {
-               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-           }
-       } catch (Exception e) {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-       }
+
+        String jwtToken = authenticationService.authenticate(username, password);
+        return ResponseEntity.ok(Map.of("token", jwtToken));
     }
 }

@@ -1,5 +1,7 @@
 package com.epam.project.service.impl;
 
+import com.epam.project.security.CustomUserDetailsService;
+import com.epam.project.security.JwtService;
 import com.epam.project.security.LoginAttemptService;
 import com.epam.project.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,9 +24,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
-    public boolean authenticate(String username, String password) {
+    public String authenticate(String username, String password) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
@@ -32,9 +37,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (authentication.isAuthenticated()) {
                 loginAttemptService.loginSucceeded(username);
                 logger.info("User '{}' successfully authenticated.", username);
-                return true;
+
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                return jwtService.generateToken(userDetails);
             }
-            return false;
+            throw new BadCredentialsException("Authentication failed");
+
 
         } catch (LockedException e) {
 
