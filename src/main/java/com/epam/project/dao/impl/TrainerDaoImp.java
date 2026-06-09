@@ -2,7 +2,9 @@ package com.epam.project.dao.impl;
 
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.model.Trainer;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,30 +26,30 @@ public class TrainerDaoImp implements TrainerDao {
             "(SELECT tr FROM Trainee trainee JOIN trainee.trainers tr WHERE trainee.user.username = :username)";
     private static final String FIND_ALL_QUERY = "FROM Trainer";
 
-    private final SessionFactory sessionFactory;
+    private final EntityManager entityManager;
 
     public Trainer save(Trainer trainer) {
-        Trainer mergedTrainer = sessionFactory.getCurrentSession().merge(trainer);
+        Trainer mergedTrainer = entityManager.unwrap(Session.class).merge(trainer);
         logger.info("Saved trainer with username: {}", mergedTrainer.getUser().getUsername());
         return mergedTrainer;
     }
 
     public Optional<Trainer> findByUsername(String username) {
-        return sessionFactory.getCurrentSession()
+        return entityManager.unwrap(Session.class)
                 .createQuery(FIND_BY_USERNAME_QUERY, Trainer.class)
                 .setParameter("username", username)
                 .uniqueResultOptional();
     }
 
     public List<Trainer> findAll() {
-        return sessionFactory.getCurrentSession()
+        return entityManager.unwrap(Session.class)
                 .createQuery(FIND_ALL_QUERY, Trainer.class)
                 .getResultList();
     }
 
     @Override
     public List<Trainer> findUnassignedActiveTrainers(String traineeUsername) {
-        return sessionFactory.getCurrentSession()
+        return entityManager.unwrap(Session.class)
                 .createQuery(FIND_UNASSIGNED_ACTIVE_TRAINERS_QUERY, Trainer.class)
                 .setParameter("username", traineeUsername)
                 .getResultList();

@@ -18,4 +18,6 @@ public interface TrainerService {
 
     @Transactional(readOnly = true)
     List<Training> getTrainerTrainingsList(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeUsername);
+
+    List<Trainer> findAllTrainers();
 }

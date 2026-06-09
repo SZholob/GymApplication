@@ -2,8 +2,9 @@ package com.epam.project.dao.impl;
 
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.model.Trainee;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.SessionFactory;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -22,18 +23,18 @@ public class TraineeDaoImp implements TraineeDao {
     private static final String FIND_BY_USERNAME_QUERY = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
     private static final String FIND_ALL_QUERY = "FROM Trainee";
 
-    private final SessionFactory sessionFactory;
+    private final EntityManager entityManager;
 
     @Override
     public Trainee save(Trainee trainee) {
-        Trainee mergedTrainee = sessionFactory.getCurrentSession().merge(trainee);
+        Trainee mergedTrainee = entityManager.unwrap(Session.class).merge(trainee);
         logger.info("Saved trainee with username: {}", mergedTrainee.getUser().getUsername());
         return mergedTrainee;
     }
 
     @Override
     public Optional<Trainee> findByUsername(String username) {
-        return sessionFactory.getCurrentSession()
+        return entityManager.unwrap(Session.class)
                 .createQuery(FIND_BY_USERNAME_QUERY, Trainee.class)
                 .setParameter("username", username)
                 .uniqueResultOptional();
@@ -41,7 +42,7 @@ public class TraineeDaoImp implements TraineeDao {
 
     @Override
     public List<Trainee> findAll() {
-        return sessionFactory.getCurrentSession()
+        return entityManager.unwrap(Session.class)
                 .createQuery(FIND_ALL_QUERY, Trainee.class)
                 .getResultList();
     }
@@ -51,7 +52,7 @@ public class TraineeDaoImp implements TraineeDao {
         Optional<Trainee> traineeOpt = findByUsername(username);
         traineeOpt.ifPresentOrElse(
                 trainee -> {
-                    sessionFactory.getCurrentSession().remove(trainee);
+                    entityManager.unwrap(Session.class).remove(trainee);
                     logger.info("Deleted trainee with username: {}", username);
                 },
                 () -> logger.warn("Trainee with username {} not found for deletion", username)

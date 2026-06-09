@@ -91,4 +91,10 @@ public class TrainerServiceImpl implements TrainerService {
     public List<Training> getTrainerTrainingsList(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeUsername) {
         return trainingDao.findTrainerTrainingsByCriteria(trainerUsername, fromDate, toDate, traineeUsername);
     }
+
+    @Override
+    public List<Trainer> findAllTrainers() {
+        logger.debug("Fetching all trainers");
+        return trainerDao.findAll();
+    }
 }

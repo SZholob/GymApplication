@@ -1,5 +1,6 @@
 package com.epam.project.service.impl;
 
+import com.epam.project.actuator.GymMetrics;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
@@ -31,6 +32,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainerDao trainerDao;
     private final TrainingTypeDao trainingTypeDao;
     private final ValidationService validationService;
+    private final GymMetrics gymMetrics;
 
     public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration) {
 
@@ -57,10 +59,17 @@ public class TrainingServiceImpl implements TrainingService {
         }
         validationService.validate(training);
 
+        long startTime = System.currentTimeMillis();
+
         Training savedTraining = trainingDao.save(training);
+
+        long endTime = System.currentTimeMillis();
+        gymMetrics.recordTrainingCreationTime(endTime - startTime);
 
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
+
+        gymMetrics.incrementTrainingCount(training.getTrainingType().getTrainingTypeName());
 
         return savedTraining;
     }
