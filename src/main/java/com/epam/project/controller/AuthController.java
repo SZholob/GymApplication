@@ -53,10 +53,15 @@ public class AuthController {
     public ResponseEntity<String> login(
             @RequestParam("username") String username,
             @RequestParam("password") String password) {
-        if (authenticationService.authenticate(username, password)) {
-            return ResponseEntity.ok("200 OK");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
+       try {
+           boolean isAuthenticated = authenticationService.authenticate(username, password);
+           if (isAuthenticated) {
+               return ResponseEntity.ok("Login successful");
+           } else {
+               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+           }
+       } catch (Exception e) {
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+       }
     }
 }

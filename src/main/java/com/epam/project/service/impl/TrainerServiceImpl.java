@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final TrainingDao trainingDao;
     private final TrainingTypeDao trainingTypeDao;
     private final ValidationService validationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Trainer createProfile(String firstName, String lastName, String trainingTypeName) {
@@ -40,7 +42,8 @@ public class TrainerServiceImpl implements TrainerService {
         Set<String> existingUsernames = new HashSet<>(userDao.findUsernamesByPrefix(baseUsername));
 
         String username = UserUtils.generateUsername(firstName, lastName, existingUsernames);
-        String password = UserUtils.generatePassword();
+        String plainPassword = UserUtils.generatePassword();
+        String password = passwordEncoder.encode(plainPassword);
 
         User user = new User(null, firstName, lastName, username, password, true);
 
@@ -53,7 +56,7 @@ public class TrainerServiceImpl implements TrainerService {
         validationService.validate(trainer);
 
         Trainer saved = trainerDao.save(trainer);
-        logger.info("Trainer Profile created. Username: {}, Password: {}", username, password);
+        logger.info("Trainer Profile created. Username: {} ", username);
         return saved;
     }
 
