@@ -30,11 +30,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                user.getIsActive(), // Перевіряємо активність профілю
-                true, // accountNonExpired
-                true, // credentialsNonExpired
-                true, // accountNonLocked
-                Collections.emptyList() // Ролі якщо нада будуть
+                user.getIsActive(),
+                true,
+                true,
+                true,
+                Collections.emptyList() // Ролі якшо нада будуть
         );
     }
 }
