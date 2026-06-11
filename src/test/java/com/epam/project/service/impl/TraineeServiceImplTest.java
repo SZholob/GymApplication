@@ -45,6 +45,9 @@ public class TraineeServiceImplTest {
     @Mock
     private UserDao userDao;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private TraineeServiceImpl traineeService;
 
@@ -73,6 +76,7 @@ public class TraineeServiceImplTest {
         testTraining.setTrainingType(testTrainingType);
         testTraining.setTrainingDate(LocalDate.of(2024, 5, 10));
         testTraining.setTrainingDuration(60);
+        org.mockito.Mockito.lenient().when(passwordEncoder.encode(any(CharSequence.class))).thenReturn("encodedPassword");
     }
 
     @Test

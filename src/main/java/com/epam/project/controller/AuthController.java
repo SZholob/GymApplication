@@ -5,6 +5,7 @@ import com.epam.project.dto.TraineeRegistrationRequest;
 import com.epam.project.dto.TrainerRegistrationRequest;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
+import com.epam.project.security.JwtService;
 import com.epam.project.service.AuthenticationService;
 import com.epam.project.service.TraineeService;
 import com.epam.project.service.TrainerService;
@@ -12,9 +13,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @Tag(name = "Authentication", description = "Endpoints for login and registration")
@@ -24,6 +28,8 @@ public class AuthController {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
     @PostMapping("/trainee/register")
     @Operation(summary = "Register a new Trainee", description = "Creates a new trainee profile and generates credentials")
@@ -34,9 +40,11 @@ public class AuthController {
                 request.dateOfBirth(),
                 request.address()
         );
-        return ResponseEntity.ok(new RegistrationResponse(trainee.getUser().getUsername(), trainee.getUser().getPassword()));
-    }
 
+        UserDetails userDetails = userDetailsService.loadUserByUsername(trainee.getUser().getUsername());
+        String jwtToken = jwtService.generateToken(userDetails);
+        return ResponseEntity.ok(new RegistrationResponse(trainee.getUser().getUsername(), trainee.getUser().getPassword(), jwtToken));
+    }
     @PostMapping("/trainer/register")
     @Operation(summary = "Register a new Trainer", description = "Creates a new trainer profile and generates credentials")
     public ResponseEntity<RegistrationResponse> registerTrainer(@Valid @RequestBody TrainerRegistrationRequest request) {
@@ -45,18 +53,18 @@ public class AuthController {
                 request.lastName(),
                 request.specialization()
         );
-        return ResponseEntity.ok(new RegistrationResponse(trainer.getUser().getUsername(), trainer.getUser().getPassword()));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(trainer.getUser().getUsername());
+        String jwtToken = jwtService.generateToken(userDetails);
+        return ResponseEntity.ok(new RegistrationResponse(trainer.getUser().getUsername(), trainer.getUser().getPassword(), jwtToken));
     }
 
     @GetMapping("/login")
-    @Operation(summary = "Login", description = "Authenticates a user and returns a success message if credentials are valid")
-    public ResponseEntity<String> login(
+    @Operation(summary = "Login", description = "Authenticates a user and returns a JWT Bearer token")
+    public ResponseEntity<Map<String, String>> login(
             @RequestParam("username") String username,
             @RequestParam("password") String password) {
-        if (authenticationService.authenticate(username, password)) {
-            return ResponseEntity.ok("200 OK");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
+
+        String jwtToken = authenticationService.authenticate(username, password);
+        return ResponseEntity.ok(Map.of("token", jwtToken));
     }
 }

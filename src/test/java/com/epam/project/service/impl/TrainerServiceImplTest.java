@@ -44,6 +44,9 @@ public class TrainerServiceImplTest {
     @Mock
     private ValidationService validationService;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private TrainerServiceImpl trainerService;
 
@@ -56,6 +59,7 @@ public class TrainerServiceImplTest {
         testUser = new User(1L, "Jane", "Smith", "Jane.Smith", "password456", true);
         testTrainingType = new TrainingType(1L, "YOGA");
         testTrainer = new Trainer(1L, testTrainingType, testUser, new ArrayList<>(), null);
+        org.mockito.Mockito.lenient().when(passwordEncoder.encode(any(CharSequence.class))).thenReturn("encodedPassword");
     }
 
     // ============== createProfile() Tests ==============

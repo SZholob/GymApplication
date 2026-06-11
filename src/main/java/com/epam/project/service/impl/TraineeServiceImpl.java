@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainingDao trainingDao;
     private final UserDao userDao;
     private final ValidationService validationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Trainee createProfile(String firstName, String lastName, LocalDate dateOfBirth, String address) {
@@ -44,7 +46,8 @@ public class TraineeServiceImpl implements TraineeService {
         Set<String> existingUsernames = new HashSet<>(userDao.findUsernamesByPrefix(baseUsername));
 
         String username = UserUtils.generateUsername(firstName, lastName, existingUsernames);
-        String password = UserUtils.generatePassword();
+        String plainPassword = UserUtils.generatePassword();
+        String password = passwordEncoder.encode(plainPassword);
 
         User user = new User(null, firstName, lastName, username, password, true);
         Trainee trainee = new Trainee(null, dateOfBirth, address, user, null, null);
@@ -53,7 +56,7 @@ public class TraineeServiceImpl implements TraineeService {
         validationService.validate(trainee);
 
         Trainee savedTrainee = traineeDao.save(trainee);
-        logger.info("Created Trainee Profile. Username: {}, Password: {}", username, password);
+        logger.info("Created Trainee Profile. Username: {}", username);
         return savedTrainee;
     }
 

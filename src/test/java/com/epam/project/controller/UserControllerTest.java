@@ -19,6 +19,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
@@ -45,7 +47,7 @@ public class UserControllerTest {
 
     @Test
     void changePasswordSuccess() throws Exception {
-        when(authenticationService.authenticate("John.Doe","old")).thenReturn(true);
+        when(authenticationService.authenticate("John.Doe","old")).thenReturn("mocked-jwt-token");
 
         ChangePasswordRequest req = new ChangePasswordRequest("John.Doe","old","newpwd");
 
@@ -60,7 +62,7 @@ public class UserControllerTest {
 
     @Test
     void changePasswordUnauthorized() throws Exception {
-        when(authenticationService.authenticate("John.Doe","old")).thenReturn(false);
+        when(authenticationService.authenticate("John.Doe","old")).thenThrow(new BadCredentialsException("Invalid old password"));
 
         ChangePasswordRequest req = new ChangePasswordRequest("John.Doe","old","newpwd");
 
@@ -68,7 +70,7 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Invalid old password"));
+                .andExpect(jsonPath("$.error").value("Invalid old password"));
 
         verify(userService, never()).changePassword(anyString(), anyString());
     }

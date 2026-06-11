@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthControllerTest {
@@ -40,6 +41,12 @@ public class AuthControllerTest {
 
     @Mock
     private AuthenticationService authenticationService;
+
+    @Mock
+    private org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
+
+    @Mock
+    private com.epam.project.security.JwtService jwtService;
 
     @InjectMocks
     private AuthController authController;
@@ -63,6 +70,9 @@ public class AuthControllerTest {
         Trainee trainee = new Trainee(1L, LocalDate.of(1990,1,1), "Kyiv", user, null, null);
 
         when(traineeService.createProfile(anyString(), anyString(), any(), anyString())).thenReturn(trainee);
+        org.springframework.security.core.userdetails.UserDetails ud = new org.springframework.security.core.userdetails.User("John.Doe", "pwd", java.util.Collections.emptyList());
+        when(userDetailsService.loadUserByUsername("John.Doe")).thenReturn(ud);
+        when(jwtService.generateToken(ud)).thenReturn("token");
 
         TraineeRegistrationRequest req = new TraineeRegistrationRequest("John","Doe",LocalDate.of(1990,1,1),"Kyiv");
 
@@ -82,6 +92,9 @@ public class AuthControllerTest {
         Trainer trainer = new Trainer(2L, null, user, null, null);
 
         when(trainerService.createProfile(anyString(), anyString(), anyString())).thenReturn(trainer);
+        org.springframework.security.core.userdetails.UserDetails ud = new org.springframework.security.core.userdetails.User("Jane.Smith", "pwd2", java.util.Collections.emptyList());
+        when(userDetailsService.loadUserByUsername("Jane.Smith")).thenReturn(ud);
+        when(jwtService.generateToken(ud)).thenReturn("token2");
 
         TrainerRegistrationRequest req = new TrainerRegistrationRequest("Jane","Smith","YOGA");
 
@@ -97,14 +110,16 @@ public class AuthControllerTest {
 
     @Test
     void loginSuccessAndFail() throws Exception {
-        when(authenticationService.authenticate("John.Doe","pwd")).thenReturn(true);
-        when(authenticationService.authenticate("John.Doe","wrong")).thenReturn(false);
+        when(authenticationService.authenticate("John.Doe","pwd")).thenReturn("mocked-jwt-token");
+        when(authenticationService.authenticate("John.Doe","wrong")).thenThrow(new BadCredentialsException("Invalid username or password"));
 
         mockMvc.perform(get("/api/auth/login").param("username","John.Doe").param("password","pwd"))
-                .andExpect(status().isOk()).andExpect(content().string("200 OK"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
 
         mockMvc.perform(get("/api/auth/login").param("username","John.Doe").param("password","wrong"))
-                .andExpect(status().isUnauthorized()).andExpect(content().string("Invalid username or password"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid username or password"));
 
         verify(authenticationService, times(2)).authenticate(anyString(), anyString());
     }
