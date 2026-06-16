@@ -56,7 +56,7 @@ public class TrainerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User(1L, "Jane", "Smith", "Jane.Smith", "password456", true);
+        testUser = new User(1L, "Jane", "Smith", "Jane.Smith", "password456", "password456", true);
         testTrainingType = new TrainingType(1L, "YOGA");
         testTrainer = new Trainer(1L, testTrainingType, testUser, new ArrayList<>(), null);
         org.mockito.Mockito.lenient().when(passwordEncoder.encode(any(CharSequence.class))).thenReturn("encodedPassword");
@@ -88,7 +88,7 @@ public class TrainerServiceImplTest {
     void testCreateProfileWithExistingUsernames() {
         when(userDao.findUsernamesByPrefix("Jane.Smith")).thenReturn(List.of("Jane.Smith"));
         when(trainingTypeDao.findByTypeName("YOGA")).thenReturn(Optional.of(testTrainingType));
-        Trainer expectedTrainer = new Trainer(2L, testTrainingType, new User(2L, "Jane", "Smith", "Jane.Smith1", "password456", true), new ArrayList<>(), null);
+        Trainer expectedTrainer = new Trainer(2L, testTrainingType, new User(2L, "Jane", "Smith", "Jane.Smith1", "password456", "password456", true), new ArrayList<>(), null);
         when(trainerDao.save(any(Trainer.class))).thenReturn(expectedTrainer);
 
         Trainer result = trainerService.createProfile("Jane", "Smith", "YOGA");

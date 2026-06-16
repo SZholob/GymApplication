@@ -61,10 +61,10 @@ public class TraineeServiceImplTest {
     @BeforeEach
     void setUp() {
         testDate = LocalDate.of(1990, 5, 15);
-        testUser = new User(1L, "John", "Doe", "John.Doe", "password123", true);
+        testUser = new User(1L, "John", "Doe", "John.Doe", "password123", "password123", true);
         testTrainee = new Trainee(1L, testDate, "Kyiv", testUser, new ArrayList<>(), null);
 
-        User trainerUser = new User(2L, "Jane", "Smith", "Jane.Smith", "password456", true);
+        User trainerUser = new User(2L, "Jane", "Smith", "Jane.Smith", "password456", "password456", true);
         testTrainingType = new TrainingType(1L, "YOGA");
         testTrainer = new Trainer(2L, testTrainingType, trainerUser, new ArrayList<>(), null);
 
@@ -100,7 +100,7 @@ public class TraineeServiceImplTest {
     @Test
     void testCreateProfileWithExistingUsernames() {
         when(userDao.findUsernamesByPrefix("John.Doe")).thenReturn(List.of("John.Doe"));
-        Trainee expectedTrainee = new Trainee(2L, testDate, "Kyiv", new User(2L, "John", "Doe", "John.Doe1", "password123", true), new ArrayList<>(), null);
+        Trainee expectedTrainee = new Trainee(2L, testDate, "Kyiv", new User(2L, "John", "Doe", "John.Doe1", "password123", "password123", true), new ArrayList<>(), null);
         when(traineeDao.save(any(Trainee.class))).thenReturn(expectedTrainee);
 
         Trainee result = traineeService.createProfile("John", "Doe", testDate, "Kyiv");

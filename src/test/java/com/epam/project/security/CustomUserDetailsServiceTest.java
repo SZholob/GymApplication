@@ -26,7 +26,7 @@ class CustomUserDetailsServiceTest {
 
     @Test
     void testLoadUserSuccess() {
-        User dbUser = new User(1L, "John", "Doe", "John.Doe", "hashed", true);
+        User dbUser = new User(1L, "John", "Doe", "John.Doe", "hashed", "hashed", true);
         when(loginAttemptService.isBlocked("John.Doe")).thenReturn(false);
         when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(dbUser));
 

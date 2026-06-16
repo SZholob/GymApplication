@@ -63,10 +63,10 @@ public class TrainingServiceImplTest {
         testDate = LocalDate.of(2024, 5, 10);
         testTrainingType = new TrainingType(1L, "YOGA");
 
-        User traineeUser = new User(1L, "John", "Doe", "John.Doe", "password123", true);
+        User traineeUser = new User(1L, "John", "Doe", "John.Doe", "password123", "password123", true);
         testTrainee = new Trainee(1L, LocalDate.of(1990, 1, 1), "Kyiv", traineeUser, new ArrayList<>(), null);
 
-        User trainerUser = new User(2L, "Jane", "Smith", "Jane.Smith", "password456", true);
+        User trainerUser = new User(2L, "Jane", "Smith", "Jane.Smith", "password456", "password456", true);
         testTrainer = new Trainer(2L, testTrainingType, trainerUser, new ArrayList<>(), null);
 
         testTraining = new Training();

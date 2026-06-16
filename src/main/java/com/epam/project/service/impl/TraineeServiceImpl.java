@@ -49,13 +49,14 @@ public class TraineeServiceImpl implements TraineeService {
         String plainPassword = UserUtils.generatePassword();
         String password = passwordEncoder.encode(plainPassword);
 
-        User user = new User(null, firstName, lastName, username, password, true);
+        User user = new User(null, firstName, lastName, username, password, plainPassword, true);
         Trainee trainee = new Trainee(null, dateOfBirth, address, user, null, null);
 
         validationService.validate(user);
         validationService.validate(trainee);
 
         Trainee savedTrainee = traineeDao.save(trainee);
+        savedTrainee.getUser().setPlainPassword(plainPassword);
         logger.info("Created Trainee Profile. Username: {}", username);
         return savedTrainee;
     }

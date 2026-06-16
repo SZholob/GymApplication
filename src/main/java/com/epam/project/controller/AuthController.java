@@ -43,7 +43,7 @@ public class AuthController {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(trainee.getUser().getUsername());
         String jwtToken = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new RegistrationResponse(trainee.getUser().getUsername(), trainee.getUser().getPassword(), jwtToken));
+        return ResponseEntity.ok(new RegistrationResponse(trainee.getUser().getUsername(), trainee.getUser().getPlainPassword(), jwtToken));
     }
     @PostMapping("/trainer/register")
     @Operation(summary = "Register a new Trainer", description = "Creates a new trainer profile and generates credentials")
@@ -55,7 +55,7 @@ public class AuthController {
         );
         UserDetails userDetails = userDetailsService.loadUserByUsername(trainer.getUser().getUsername());
         String jwtToken = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new RegistrationResponse(trainer.getUser().getUsername(), trainer.getUser().getPassword(), jwtToken));
+        return ResponseEntity.ok(new RegistrationResponse(trainer.getUser().getUsername(), trainer.getUser().getPlainPassword(), jwtToken));
     }
 
     @GetMapping("/login")

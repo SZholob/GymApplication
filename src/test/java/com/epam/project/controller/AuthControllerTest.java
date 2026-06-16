@@ -66,7 +66,7 @@ public class AuthControllerTest {
 
     @Test
     void registerTraineeSuccess() throws Exception {
-        User user = new User(1L, "John", "Doe", "John.Doe", "pwd", true);
+        User user = new User(1L, "John", "Doe", "John.Doe", "pwd", "pwd", true);
         Trainee trainee = new Trainee(1L, LocalDate.of(1990,1,1), "Kyiv", user, null, null);
 
         when(traineeService.createProfile(anyString(), anyString(), any(), anyString())).thenReturn(trainee);
@@ -88,7 +88,7 @@ public class AuthControllerTest {
 
     @Test
     void registerTrainerSuccess() throws Exception {
-        User user = new User(2L, "Jane", "Smith", "Jane.Smith", "pwd2", true);
+        User user = new User(2L, "Jane", "Smith", "Jane.Smith", "pwd2", "pwd2", true);
         Trainer trainer = new Trainer(2L, null, user, null, null);
 
         when(trainerService.createProfile(anyString(), anyString(), anyString())).thenReturn(trainer);

@@ -45,7 +45,7 @@ public class TrainerServiceImpl implements TrainerService {
         String plainPassword = UserUtils.generatePassword();
         String password = passwordEncoder.encode(plainPassword);
 
-        User user = new User(null, firstName, lastName, username, password, true);
+        User user = new User(null, firstName, lastName, username, password, plainPassword, true);
 
         TrainingType specialization = trainingTypeDao.findByTypeName(trainingTypeName)
                 .orElseThrow(() -> new IllegalArgumentException("Training Type not found: " + trainingTypeName));
@@ -56,6 +56,7 @@ public class TrainerServiceImpl implements TrainerService {
         validationService.validate(trainer);
 
         Trainer saved = trainerDao.save(trainer);
+        saved.getUser().setPlainPassword(plainPassword);
         logger.info("Trainer Profile created. Username: {} ", username);
         return saved;
     }
