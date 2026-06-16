@@ -60,10 +60,10 @@ public class TraineeControllerTest {
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
-        User user = new User(1L, "John","Doe","John.Doe","pwd",true);
+        User user = new User(1L, "John","Doe","John.Doe","pwd","pwd",true);
         testTrainee = new Trainee(1L, LocalDate.of(1990,1,1), "Kyiv", user, new ArrayList<>(), null);
 
-        User trainerUser = new User(2L, "Jane","Smith","Jane.Smith","pwd2",true);
+        User trainerUser = new User(2L, "Jane","Smith","Jane.Smith","pwd2","pwd2",true);
         testTrainer = new Trainer(2L, new TrainingType(1L,"YOGA"), trainerUser, new ArrayList<>(), null);
     }
 

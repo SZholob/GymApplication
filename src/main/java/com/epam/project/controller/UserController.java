@@ -23,7 +23,7 @@ public class UserController {
     @PutMapping("/password")
     @Operation(summary = "Change user password", description = "Allows a user to change their password by providing their username, old password, and new password.")
     public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        if (!authenticationService.authenticate(request.username(), request.oldPassword())) {
+        if (authenticationService.authenticate(request.username(), request.oldPassword()) == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid old password");
         }
         userService.changePassword(request.username(), request.newPassword());

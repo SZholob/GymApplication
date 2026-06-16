@@ -1,143 +1,93 @@
 package com.epam.project.service.impl;
 
-import com.epam.project.dao.UserDao;
-import com.epam.project.model.User;
-import org.junit.jupiter.api.BeforeEach;
+import com.epam.project.security.CustomUserDetailsService;
+import com.epam.project.security.JwtService;
+import com.epam.project.security.LoginAttemptService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceImplTest {
 
     @Mock
-    private UserDao userDao;
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private LoginAttemptService loginAttemptService;
+
+    @Mock
+    private JwtService jwtService;
+
+    @Mock
+    private CustomUserDetailsService userDetailsService;
 
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
 
-    private User testUser;
-
-    @BeforeEach
-    void setUp() {
-        testUser = new User(1L, "John", "Doe", "John.Doe", "password123", true);
-    }
-
-    // ============== authenticate() Tests ==============
-
     @Test
-    void testAuthenticateSuccess() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
+    void testAuthenticateSuccess_returnsJwtToken_and_recordsSuccess() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
 
-        boolean result = authenticationService.authenticate("John.Doe", "password123");
+        UserDetails userDetails = new User("user", "pass", java.util.Collections.emptyList());
+        when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
+        when(jwtService.generateToken(userDetails)).thenReturn("mocked-jwt-token");
 
-        assertTrue(result);
+        String token = authenticationService.authenticate("user", "pass");
 
-        verify(userDao, times(1)).findByUsername("John.Doe");
+        assertEquals("mocked-jwt-token", token);
+        verify(loginAttemptService, times(1)).loginSucceeded("user");
+        verify(loginAttemptService, never()).loginFailed(anyString());
     }
 
     @Test
-    void testAuthenticateUserNotFound() {
-        when(userDao.findByUsername("nonexistent")).thenReturn(Optional.empty());
+    void testAuthenticate_badCredentials_incrementsAttempts_and_throws() {
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad creds"));
+        when(loginAttemptService.getAttempts("user")).thenReturn(1);
 
-        boolean result = authenticationService.authenticate("nonexistent", "password123");
+        BadCredentialsException ex = assertThrows(BadCredentialsException.class,
+                () -> authenticationService.authenticate("user", "wrong"));
 
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("nonexistent");
+        assertTrue(ex.getMessage().contains("Invalid username or password") || ex.getMessage().contains("Bad creds"));
+        verify(loginAttemptService, times(1)).loginFailed("user");
+        verify(loginAttemptService, times(1)).getAttempts("user");
     }
 
     @Test
-    void testAuthenticateWrongPassword() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
+    void testAuthenticate_lockedAfterThreeAttempts_throwsLockedException() {
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad creds"));
+        when(loginAttemptService.getAttempts("user")).thenReturn(3);
 
-        boolean result = authenticationService.authenticate("John.Doe", "wrongpassword");
+        LockedException ex = assertThrows(LockedException.class,
+                () -> authenticationService.authenticate("user", "wrong"));
 
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("John.Doe");
+        assertTrue(ex.getMessage().toLowerCase().contains("locked"));
+        verify(loginAttemptService, times(1)).loginFailed("user");
+        verify(loginAttemptService, times(1)).getAttempts("user");
     }
 
     @Test
-    void testAuthenticateEmptyPassword() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
+    void testAuthenticate_whenAuthenticationManagerThrowsLockedException_propagatesWithoutCallingLoginFailed() {
+        when(authenticationManager.authenticate(any())).thenThrow(new LockedException("Temporarily locked"));
 
-        boolean result = authenticationService.authenticate("John.Doe", "");
+        LockedException ex = assertThrows(LockedException.class,
+                () -> authenticationService.authenticate("user", "pass"));
 
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("John.Doe");
-    }
-
-    @Test
-    void testAuthenticateNullPassword() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
-
-        boolean result = authenticationService.authenticate("John.Doe", null);
-
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("John.Doe");
-    }
-
-    @Test
-    void testAuthenticateCaseSensitiveUsername() {
-        when(userDao.findByUsername("john.doe")).thenReturn(Optional.empty());
-
-        boolean result = authenticationService.authenticate("john.doe", "password123");
-
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("john.doe");
-    }
-
-    @Test
-    void testAuthenticateCaseSensitivePassword() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
-
-        boolean result = authenticationService.authenticate("John.Doe", "Password123");
-
-        assertFalse(result);
-
-        verify(userDao, times(1)).findByUsername("John.Doe");
-    }
-
-    @Test
-    void testAuthenticateMultipleAttempts() {
-        when(userDao.findByUsername("John.Doe")).thenReturn(Optional.of(testUser));
-
-        // First attempt - correct password
-        boolean result1 = authenticationService.authenticate("John.Doe", "password123");
-        assertTrue(result1);
-
-        // Second attempt - wrong password
-        boolean result2 = authenticationService.authenticate("John.Doe", "wrongpassword");
-        assertFalse(result2);
-
-        // Third attempt - correct password again
-        boolean result3 = authenticationService.authenticate("John.Doe", "password123");
-        assertTrue(result3);
-
-        verify(userDao, times(3)).findByUsername("John.Doe");
-    }
-
-
-    @Test
-    void testAuthenticateWithDifferentUser() {
-        User differentUser = new User(2L, "Jane", "Smith", "Jane.Smith", "password456", true);
-        when(userDao.findByUsername("Jane.Smith")).thenReturn(Optional.of(differentUser));
-
-        boolean result = authenticationService.authenticate("Jane.Smith", "password456");
-
-        assertTrue(result);
-
-        verify(userDao, times(1)).findByUsername("Jane.Smith");
+        assertEquals("Temporarily locked", ex.getMessage());
+        verify(loginAttemptService, never()).loginFailed(anyString());
     }
 }

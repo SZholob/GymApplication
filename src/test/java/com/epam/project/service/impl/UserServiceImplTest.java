@@ -32,7 +32,7 @@ public class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User(1L, "John", "Doe", "John.Doe", "password123", true);
+        testUser = new User(1L, "John", "Doe", "John.Doe", "password123", "password123", true);
     }
 
     // ============== changePassword() Tests ==============
