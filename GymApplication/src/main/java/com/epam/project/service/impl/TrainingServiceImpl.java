@@ -1,10 +1,13 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.actuator.GymMetrics;
+import com.epam.project.client.WorkloadFeignClient;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
+import com.epam.project.dto.ActionType;
+import com.epam.project.dto.WorkloadRequest;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
@@ -33,6 +36,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeDao trainingTypeDao;
     private final ValidationService validationService;
     private final GymMetrics gymMetrics;
+    private final WorkloadFeignClient workloadFeignClient;
 
     public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration) {
 
@@ -65,7 +69,25 @@ public class TrainingServiceImpl implements TrainingService {
 
         long endTime = System.currentTimeMillis();
         gymMetrics.recordTrainingCreationTime(endTime - startTime);
+        try {
+            WorkloadRequest workloadRequest = new WorkloadRequest(
+                    trainer.getUser().getUsername(),
+                    trainer.getUser().getFirstName(),
+                    trainer.getUser().getLastName(),
+                    trainer.getUser().getIsActive(),
+                    training.getTrainingDate(),
+                    training.getTrainingDuration(),
+                    ActionType.ADD
+            );
 
+            workloadFeignClient.updateWorkload(workloadRequest);
+            logger.info("Load data successfully sent to the trainer microservice {}"
+                    , trainer.getUser().getUsername());
+
+        } catch (Exception e) {
+
+            logger.error("Error sending data to the load microservice", e);
+        }
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
 
