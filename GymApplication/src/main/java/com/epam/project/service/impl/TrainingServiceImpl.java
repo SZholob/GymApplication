@@ -69,25 +69,21 @@ public class TrainingServiceImpl implements TrainingService {
 
         long endTime = System.currentTimeMillis();
         gymMetrics.recordTrainingCreationTime(endTime - startTime);
-        try {
-            WorkloadRequest workloadRequest = new WorkloadRequest(
-                    trainer.getUser().getUsername(),
-                    trainer.getUser().getFirstName(),
-                    trainer.getUser().getLastName(),
-                    trainer.getUser().getIsActive(),
-                    training.getTrainingDate(),
-                    training.getTrainingDuration(),
-                    ActionType.ADD
-            );
 
-            workloadFeignClient.updateWorkload(workloadRequest);
-            logger.info("Load data successfully sent to the trainer microservice {}"
-                    , trainer.getUser().getUsername());
+        WorkloadRequest workloadRequest = new WorkloadRequest(
+                trainer.getUser().getUsername(),
+                trainer.getUser().getFirstName(),
+                trainer.getUser().getLastName(),
+                trainer.getUser().getIsActive(),
+                training.getTrainingDate(),
+                training.getTrainingDuration(),
+                ActionType.ADD
+        );
 
-        } catch (Exception e) {
+        workloadFeignClient.updateWorkload(workloadRequest);
+        logger.info("Load data successfully sent to the trainer microservice {}"
+                , trainer.getUser().getUsername());
 
-            logger.error("Error sending data to the load microservice", e);
-        }
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
 
@@ -101,6 +97,4 @@ public class TrainingServiceImpl implements TrainingService {
         logger.info("Fetching all training types");
         return trainingTypeDao.findAll();
     }
-
-
 }
