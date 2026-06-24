@@ -1,10 +1,12 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.actuator.GymMetrics;
+import com.epam.project.client.WorkloadFeignClient;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
+import com.epam.project.dto.ActionType;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
@@ -45,6 +47,9 @@ public class TrainingServiceImplTest {
 
     @Mock
     private ValidationService validationService;
+
+    @Mock
+    private WorkloadFeignClient workloadFeignClient;
 
     @Mock
     private GymMetrics gymMetrics;
@@ -218,5 +223,54 @@ public class TrainingServiceImplTest {
         assertTrue(result.isEmpty());
 
         verify(trainingTypeDao, times(1)).findAll();
+    }
+
+    @Test
+    void testDeleteTrainingSuccess() {
+        when(trainingDao.findById(1L)).thenReturn(Optional.of(testTraining));
+
+        trainingService.deleteTraining(1L);
+
+        verify(trainingDao, times(1)).findById(1L);
+        verify(trainingDao, times(1)).deleteById(1L);
+        verify(workloadFeignClient, times(1)).updateWorkload(any());
+    }
+
+    @Test
+    void testDeleteTrainingNotFound() {
+        when(trainingDao.findById(999L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> trainingService.deleteTraining(999L));
+
+        assertEquals("Training not found: 999", exception.getMessage());
+
+        verify(trainingDao, times(1)).findById(999L);
+        verify(trainingDao, never()).deleteById(any());
+        verify(workloadFeignClient, never()).updateWorkload(any());
+    }
+
+
+    @Test
+    void testDeleteTrainingWithDifferentTrainer() {
+        User differentTrainerUser = new User(3L, "Bob", "Johnson", "Bob.Johnson", "pwd3", "pwd3", true);
+        Trainer differentTrainer = new Trainer(3L, testTrainingType, differentTrainerUser, new ArrayList<>(), null);
+
+        Training trainingWithDifferentTrainer = new Training();
+        trainingWithDifferentTrainer.setId(2L);
+        trainingWithDifferentTrainer.setTrainee(testTrainee);
+        trainingWithDifferentTrainer.setTrainer(differentTrainer);
+        trainingWithDifferentTrainer.setTrainingName("Pilates Session");
+        trainingWithDifferentTrainer.setTrainingType(testTrainingType);
+        trainingWithDifferentTrainer.setTrainingDate(testDate);
+        trainingWithDifferentTrainer.setTrainingDuration(45);
+
+        when(trainingDao.findById(2L)).thenReturn(Optional.of(trainingWithDifferentTrainer));
+
+        trainingService.deleteTraining(2L);
+
+        verify(workloadFeignClient, times(1)).updateWorkload(argThat(request ->
+                request.trainerUsername().equals("Bob.Johnson")
+        ));
     }
 }
