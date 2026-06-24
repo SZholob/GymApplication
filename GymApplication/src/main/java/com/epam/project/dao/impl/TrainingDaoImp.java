@@ -9,7 +9,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -84,5 +84,21 @@ public class TrainingDaoImp implements TrainingDao {
         cq.where(predicates.toArray(new Predicate[0]));
 
         return entityManager.unwrap(Session.class).createQuery(cq).getResultList();
+    }
+
+    @Override
+    public Optional<Training> findById(Long trainingId) {
+        return Optional.ofNullable(entityManager.unwrap(Session.class).find(Training.class, trainingId));
+    }
+
+    @Override
+    public void deleteById(Long trainingId) {
+        Training training = entityManager.unwrap(Session.class).find(Training.class, trainingId);
+        if (training != null) {
+            entityManager.unwrap(Session.class).remove(training);
+            logger.info("Deleted training with ID: {}", trainingId);
+        } else {
+            logger.warn("Training with ID: {} not found for deletion", trainingId);
+        }
     }
 }

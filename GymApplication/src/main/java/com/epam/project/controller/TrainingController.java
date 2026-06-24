@@ -75,4 +75,11 @@ public class TrainingController {
                 .toList();
         return ResponseEntity.ok(types);
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a training session", description = "Deletes a specific training session by its ID.")
+    public ResponseEntity<String> deleteTraining(@PathVariable Long id) {
+        trainingService.deleteTraining(id);
+        return ResponseEntity.ok("Training deleted successfully");
+    }
 }

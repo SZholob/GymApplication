@@ -12,4 +12,6 @@ public interface TrainingService {
 
     List<TrainingType> getTrainingTypes();
 
+    void deleteTraining(Long trainingId);
+
 }

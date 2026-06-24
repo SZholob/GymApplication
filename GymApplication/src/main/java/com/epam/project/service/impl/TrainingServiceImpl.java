@@ -97,4 +97,28 @@ public class TrainingServiceImpl implements TrainingService {
         logger.info("Fetching all training types");
         return trainingTypeDao.findAll();
     }
+
+    @Override
+    public void deleteTraining(Long trainingId) {
+        Training training = trainingDao.findById(trainingId)
+                .orElseThrow(() -> new IllegalArgumentException("Training not found: " + trainingId));
+
+        trainingDao.deleteById(trainingId);
+
+        WorkloadRequest workloadRequest = new WorkloadRequest(
+                training.getTrainer().getUser().getUsername(),
+                training.getTrainer().getUser().getFirstName(),
+                training.getTrainer().getUser().getLastName(),
+                training.getTrainer().getUser().getIsActive(),
+                training.getTrainingDate(),
+                training.getTrainingDuration(),
+                ActionType.DELETE
+        );
+
+        workloadFeignClient.updateWorkload(workloadRequest);
+        logger.info("Load data successfully sent to the trainer microservice {}"
+                , training.getTrainer().getUser().getUsername());
+
+        logger.info("Deleted training with ID: {}", trainingId);
+    }
 }

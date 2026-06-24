@@ -1,7 +1,6 @@
 package com.epam.project.service;
 
-import com.epam.project.dto.ActionType;
-import com.epam.project.dto.WorkloadRequest;
+import com.epam.project.dto.*;
 import com.epam.project.model.TrainerWorkload;
 import com.epam.project.repository.TrainerWorkloadRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +65,38 @@ public class TrainerWorkloadService {
                         request.trainerUsername(), month, year);
             }
         }
+    }
+    public TrainerWorkloadResponse getTrainerWorkload(String username) {
+        log.info("Отримання списку навантаження для тренера: {}", username);
+
+        List<TrainerWorkload> workloads = repository.findAllByUsername(username);
+
+        if (workloads.isEmpty()) {
+            return new TrainerWorkloadResponse(username, "", "", false, List.of());
+        }
+
+        TrainerWorkload firstRecord = workloads.get(0);
+
+
+        Map<Integer, List<TrainerWorkload>> byYear = workloads.stream()
+                .collect(Collectors.groupingBy(TrainerWorkload::getYear));
+
+
+        List<YearWorkload> yearsList = byYear.entrySet().stream()
+                .map(yearEntry -> {
+                    List<MonthWorkload> months = yearEntry.getValue().stream()
+                            .map(w -> new MonthWorkload(w.getMonth(), w.getTrainingSummaryDuration()))
+                            .collect(Collectors.toList());
+                    return new YearWorkload(yearEntry.getKey(), months);
+                })
+                .collect(Collectors.toList());
+
+        return new TrainerWorkloadResponse(
+                firstRecord.getUsername(),
+                firstRecord.getFirstName(),
+                firstRecord.getLastName(),
+                firstRecord.getIsActive(),
+                yearsList
+        );
     }
 }

@@ -47,6 +47,16 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateSystemToken() {
+        return Jwts.builder()
+                .setSubject("gym-system-microservice")
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                // 5 хвилин (300000 мс)
+                .setExpiration(new Date(System.currentTimeMillis() + 300000))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);

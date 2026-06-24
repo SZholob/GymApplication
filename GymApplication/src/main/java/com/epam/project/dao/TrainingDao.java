@@ -4,6 +4,7 @@ import com.epam.project.model.Training;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TrainingDao {
     Training save(Training training);
@@ -11,4 +12,8 @@ public interface TrainingDao {
     List<Training> findTraineeTrainingsByCriteria(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerUsername, String trainingTypeName);
 
     List<Training> findTrainerTrainingsByCriteria(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeUsername);
+
+    Optional<Training> findById(Long trainingId);
+
+    void deleteById(Long trainingId);
 }
