@@ -1,6 +1,5 @@
 package com.epam.project.controller;
 
-import com.epam.project.dao.TrainingTypeDao;
 import com.epam.project.dto.*;
 import com.epam.project.model.Training;
 import com.epam.project.service.TraineeService;
