@@ -233,7 +233,7 @@ public class TrainingServiceImplTest {
 
         verify(trainingDao, times(1)).findById(1L);
         verify(trainingDao, times(1)).deleteById(1L);
-        verify(workloadFeignClient, times(1)).updateWorkload(any());
+        verify(workloadFeignClient, times(1)).updateWorkload(any(), any());
     }
 
     @Test
@@ -247,7 +247,7 @@ public class TrainingServiceImplTest {
 
         verify(trainingDao, times(1)).findById(999L);
         verify(trainingDao, never()).deleteById(any());
-        verify(workloadFeignClient, never()).updateWorkload(any());
+        verify(workloadFeignClient, never()).updateWorkload(any(), any());
     }
 
 
@@ -269,7 +269,7 @@ public class TrainingServiceImplTest {
 
         trainingService.deleteTraining(2L);
 
-        verify(workloadFeignClient, times(1)).updateWorkload(argThat(request ->
+        verify(workloadFeignClient, times(1)).updateWorkload(any(), argThat(request ->
                 request.trainerUsername().equals("Bob.Johnson")
         ));
     }

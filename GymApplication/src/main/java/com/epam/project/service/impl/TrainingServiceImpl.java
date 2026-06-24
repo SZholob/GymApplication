@@ -17,6 +17,7 @@ import com.epam.project.service.ValidationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,8 +80,8 @@ public class TrainingServiceImpl implements TrainingService {
                 training.getTrainingDuration(),
                 ActionType.ADD
         );
-
-        workloadFeignClient.updateWorkload(workloadRequest);
+        String txId = MDC.get("transactionId");
+        workloadFeignClient.updateWorkload(txId, workloadRequest);
         logger.info("Load data successfully sent to the trainer microservice {}"
                 , trainer.getUser().getUsername());
 
@@ -115,7 +116,8 @@ public class TrainingServiceImpl implements TrainingService {
                 ActionType.DELETE
         );
 
-        workloadFeignClient.updateWorkload(workloadRequest);
+        String txId = MDC.get("transactionId");
+        workloadFeignClient.updateWorkload(txId, workloadRequest);
         logger.info("Load data successfully sent to the trainer microservice {}"
                 , training.getTrainer().getUser().getUsername());
 

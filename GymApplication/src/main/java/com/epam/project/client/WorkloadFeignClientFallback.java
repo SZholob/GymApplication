@@ -9,10 +9,8 @@ import org.springframework.stereotype.Component;
 public class WorkloadFeignClientFallback implements WorkloadFeignClient {
 
     @Override
-    public void updateWorkload(WorkloadRequest request) {
-
-        log.error("============= CIRCUIT BREAKER OPEN! Load microservice unavailable.");
-        log.error("============= Training data for {} temporarily not sent. Plan B activated.", request.trainerUsername());
-
+    public void updateWorkload(String transactionId, WorkloadRequest request) {
+        log.error("⚡ CIRCUIT BREAKER ВІДКРИТО! Мікросервіс навантаження недоступний.");
+        log.error("⚡ Дані для {} не відправлено. План Б. TxID: {}", request.trainerUsername(), transactionId);
     }
 }
