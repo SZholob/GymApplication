@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jms.core.JmsTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ public class TrainingServiceImplTest {
 
     @Mock
     private ValidationService validationService;
+
+    @Mock
+    private JmsTemplate jmsTemplate;
 
 
     @Mock
