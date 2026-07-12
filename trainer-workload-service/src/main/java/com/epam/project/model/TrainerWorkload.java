@@ -1,37 +1,28 @@
 package com.epam.project.model;
 
-import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "trainer_workloads")
+import java.util.List;
+
 @Data
-@NoArgsConstructor
+@Builder
+@Document(collection = "trainer_workloads")
+@CompoundIndex(name = "first_last_name_idx", def = "{'firstName': 1, 'lastName': 1}")
 public class TrainerWorkload {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
+    @Indexed(unique = true)
     private String username;
 
-    @Column(nullable = false)
     private String firstName;
-
-    @Column(nullable = false)
     private String lastName;
-
-    @Column(nullable = false)
     private Boolean isActive;
 
-    @Column(name = "workload_year", nullable = false)
-    private Integer year;
-
-    @Column(name = "workload_month", nullable = false)
-    private Integer month;
-
-    @Column(nullable = false)
-    private Integer trainingSummaryDuration;
+    private List<Year> years;
 }
