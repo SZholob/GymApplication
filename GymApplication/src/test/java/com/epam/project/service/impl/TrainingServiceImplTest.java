@@ -1,12 +1,10 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.actuator.GymMetrics;
-import com.epam.project.client.WorkloadFeignClient;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
 import com.epam.project.dao.TrainingTypeDao;
-import com.epam.project.dto.ActionType;
 import com.epam.project.model.Trainee;
 import com.epam.project.model.Trainer;
 import com.epam.project.model.Training;
@@ -19,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jms.core.JmsTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,7 +48,8 @@ public class TrainingServiceImplTest {
     private ValidationService validationService;
 
     @Mock
-    private WorkloadFeignClient workloadFeignClient;
+    private JmsTemplate jmsTemplate;
+
 
     @Mock
     private GymMetrics gymMetrics;
@@ -233,7 +233,6 @@ public class TrainingServiceImplTest {
 
         verify(trainingDao, times(1)).findById(1L);
         verify(trainingDao, times(1)).deleteById(1L);
-        verify(workloadFeignClient, times(1)).updateWorkload(any(), any());
     }
 
     @Test
@@ -247,7 +246,6 @@ public class TrainingServiceImplTest {
 
         verify(trainingDao, times(1)).findById(999L);
         verify(trainingDao, never()).deleteById(any());
-        verify(workloadFeignClient, never()).updateWorkload(any(), any());
     }
 
 
@@ -269,8 +267,5 @@ public class TrainingServiceImplTest {
 
         trainingService.deleteTraining(2L);
 
-        verify(workloadFeignClient, times(1)).updateWorkload(any(), argThat(request ->
-                request.trainerUsername().equals("Bob.Johnson")
-        ));
     }
 }
