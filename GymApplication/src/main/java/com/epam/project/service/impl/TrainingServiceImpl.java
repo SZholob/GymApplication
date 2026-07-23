@@ -1,7 +1,6 @@
 package com.epam.project.service.impl;
 
 import com.epam.project.actuator.GymMetrics;
-import com.epam.project.client.WorkloadFeignClient;
 import com.epam.project.dao.TraineeDao;
 import com.epam.project.dao.TrainerDao;
 import com.epam.project.dao.TrainingDao;
@@ -18,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +37,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeDao trainingTypeDao;
     private final ValidationService validationService;
     private final GymMetrics gymMetrics;
-    private final WorkloadFeignClient workloadFeignClient;
+    private final JmsTemplate jmsTemplate;
 
     public Training createTraining(String traineeUsername, String trainerUsername, String trainingName, LocalDate trainingDate, Integer trainingDuration) {
 
@@ -81,9 +81,16 @@ public class TrainingServiceImpl implements TrainingService {
                 ActionType.ADD
         );
         String txId = MDC.get("transactionId");
-        workloadFeignClient.updateWorkload(txId, workloadRequest);
-        logger.info("Load data successfully sent to the trainer microservice {}"
-                , trainer.getUser().getUsername());
+
+        jmsTemplate.convertAndSend("workload.queue", workloadRequest, message -> {
+
+            if (txId != null) {
+                message.setStringProperty("X-Transaction-ID", txId);
+            }
+            return message;
+        });
+
+        logger.info("Sent an asynchronous message to ActiveMQ for the trainer: {}", workloadRequest.trainerUsername());
 
         logger.info("Created new training: '{}' for trainee: '{}' and trainer: '{}'",
                 trainingName, traineeUsername, trainerUsername);
@@ -107,7 +114,7 @@ public class TrainingServiceImpl implements TrainingService {
         trainingDao.deleteById(trainingId);
 
         WorkloadRequest workloadRequest = new WorkloadRequest(
-                training.getTrainer().getUser().getUsername(),
+                /*training.getTrainer().getUser().getUsername()*/"",
                 training.getTrainer().getUser().getFirstName(),
                 training.getTrainer().getUser().getLastName(),
                 training.getTrainer().getUser().getIsActive(),
@@ -117,9 +124,16 @@ public class TrainingServiceImpl implements TrainingService {
         );
 
         String txId = MDC.get("transactionId");
-        workloadFeignClient.updateWorkload(txId, workloadRequest);
-        logger.info("Load data successfully sent to the trainer microservice {}"
-                , training.getTrainer().getUser().getUsername());
+
+        jmsTemplate.convertAndSend("workload.queue", workloadRequest, message -> {
+
+            if (txId != null) {
+                message.setStringProperty("X-Transaction-ID", txId);
+            }
+            return message;
+        });
+
+        logger.info("Sent an asynchronous message to ActiveMQ for the trainer: {}", workloadRequest.trainerUsername());
 
         logger.info("Deleted training with ID: {}", trainingId);
     }
