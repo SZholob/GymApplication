@@ -26,6 +26,8 @@ public class E2EIntegrationSteps {
     private String traineeUsername;
     private String jwtToken;
 
+    private int latestStatusCode;
+
     private ResponseEntity<String> trainingResponse;
 
     @Given("the monolith is running on {string} and workload service on {string}")
@@ -71,7 +73,7 @@ public class E2EIntegrationSteps {
     @Then("the monolith should return a successful response")
     public void verify_monolith_response() {
         assertTrue(trainingResponse.getStatusCode().is2xxSuccessful(),
-                "Моноліт мав повернути статус 200 OK");
+                "The monolith should have returned a status of 200 OK.");
     }
 
     @Then("within {int} seconds, the workload service should show exactly {int} minutes for this trainer")
@@ -103,14 +105,66 @@ public class E2EIntegrationSteps {
                 }
             } catch (Exception e) {
 
-                System.out.println(" Очікування мікросервісу... (" + e.getMessage() + ")");
+                System.out.println(" Waiting for a microservice... (" + e.getMessage() + ")");
             }
 
             Thread.sleep(1000);
         }
 
-        assertTrue(isUpdated, "Мікросервіс навантажень не оновив години! Очікувалося: "
-                + expectedDuration + ", але було: " + actualDuration);
+        assertTrue(isUpdated, "The load microservice did not update the hours! Expected: "
+                + expectedDuration + ", but got: " + actualDuration);
+    }
+
+    @Then("the monolith should return an error response")
+    public void verify_error_response() {
+        assertTrue(latestStatusCode >= 400, "Expected an error (4xx or 5xx), but received: " + latestStatusCode);
+    }
+
+    @Then("the workload service should not have any records for this trainer")
+    public void verify_no_records() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<TrainerWorkloadResponse> response = restTemplate.exchange(
+                    workloadUrl + "/api/workloads/" + trainerUsername,
+                    org.springframework.http.HttpMethod.GET,
+                    entity,
+                    TrainerWorkloadResponse.class
+            );
+
+            TrainerWorkloadResponse body = response.getBody();
+
+            if (body != null && body.years() != null) {
+                assertTrue(body.years().isEmpty(), "The list of workloads should be empty, as the training was not created in the monolith!");
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+
+            assertTrue(true);
+        }
+    }
+
+
+    @When("I send a POST request with invalid trainee username {string}")
+    public void send_invalid_request(String invalidTrainee) {
+        AddTrainingRequest request = new AddTrainingRequest(
+                invalidTrainee, trainerUsername, "E2E Negative Test", LocalDate.now(), 90
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<AddTrainingRequest> entity = new HttpEntity<>(request, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    monolithUrl + "/api/trainings", entity, String.class);
+            this.latestStatusCode = response.getStatusCode().value();
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+
+            this.latestStatusCode = e.getStatusCode().value();
+        }
     }
 }
 
