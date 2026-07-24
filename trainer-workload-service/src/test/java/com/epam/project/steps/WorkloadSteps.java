@@ -62,7 +62,7 @@ public class WorkloadSteps {
     @Then("a new document for {string} should be created in MongoDB")
     public void a_new_document_should_be_created(String username) {
         Optional<TrainerWorkload> workload = repository.findByUsername(username);
-        assertTrue(workload.isPresent(), "Документ має існувати в MongoDB");
+        assertTrue(workload.isPresent(), "The document should exist in MongoDB");
     }
 
     @Then("the total duration for {string} in {int} month {int} should be {int}")
@@ -82,7 +82,7 @@ public class WorkloadSteps {
 
     @Then("no document should be created in MongoDB")
     public void no_document_should_be_created() {
-        assertEquals(0, repository.count(), "База даних має залишитися порожньою");
+        assertEquals(0, repository.count(), "The database should remain empty.");
     }
 
     @Then("the message should be forwarded to the DLQ {string}")
