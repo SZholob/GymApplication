@@ -16,3 +16,19 @@ Feature: Gym Monolith Component Testing
     When I send a POST request to add a training with missing duration
     Then the response status should be 400 Bad Request
     And no message should be sent to ActiveMQ
+
+  Scenario: Fail to add training when duration is negative
+    Given a valid trainee "John.Doe" and trainer "Jane.Smith" exist
+    When I send a POST request to add a training for "John.Doe" and "Jane.Smith" with negative duration -50
+    Then the response status should be 400 Bad Request
+    And no message should be sent to ActiveMQ
+
+  Scenario: Fail to access secured endpoint without JWT token
+    Given a valid trainee "John.Doe" and trainer "Jane.Smith" exist
+    When I send a GET request to retrieve trainer "Jane.Smith" without a token
+    Then the response status should be 401 Unauthorized
+
+  Scenario: Fail to authenticate with incorrect password
+    Given a valid trainee "John.Doe" and trainer "Jane.Smith" exist
+    When I try to login as "John.Doe" with wrong password "wrongPass"
+    Then the response status should be 401 Unauthorized

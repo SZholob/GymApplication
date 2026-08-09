@@ -49,6 +49,46 @@ public class WorkloadSteps {
         workloadMessageListener.receiveWorkloadMessage(request, mockMessage);
     }
 
+	@Given("the MongoDB database has a trainer {string} with {int} minutes in {int} month {int}")
+	public void setup_existing_trainer(String username, int duration, int year, int month) {
+		repository.deleteAll(); // Очищаємо перед тестом
+
+		com.epam.project.model.Month monthObj = new com.epam.project.model.Month(month, duration);
+		com.epam.project.model.Year yearObj = new com.epam.project.model.Year(year, new java.util.ArrayList<>(java.util.List.of(monthObj)));
+
+		TrainerWorkload workload = TrainerWorkload.builder()
+			.username(username)
+			.firstName("Jane")
+			.lastName("Smith")
+			.isActive(true)
+			.years(new java.util.ArrayList<>(java.util.List.of(yearObj)))
+			.build();
+
+		repository.save(workload);
+	}
+
+	@When("a valid message to DELETE {int} minutes for {string} on {string} is received")
+	public void a_valid_delete_message_is_received(int duration, String username, String date) throws jakarta.jms.JMSException {
+		WorkloadRequest request = new WorkloadRequest(
+			username, "Jane", "Smith", true, LocalDate.parse(date), duration, ActionType.DELETE
+		);
+
+		Message mockMessage = mock(Message.class);
+		when(mockMessage.getStringProperty("X-Transaction-ID")).thenReturn("test-tx-delete");
+		workloadMessageListener.receiveWorkloadMessage(request, mockMessage);
+	}
+
+	@When("an invalid message with missing training date is received")
+	public void invalid_message_missing_date() throws jakarta.jms.JMSException {
+		// null замість дати
+		WorkloadRequest request = new WorkloadRequest(
+			"Jane.Smith", "Jane", "Smith", true, null, 60, ActionType.ADD
+		);
+
+		Message mockMessage = mock(Message.class);
+		workloadMessageListener.receiveWorkloadMessage(request, mockMessage);
+	}
+
     @When("an invalid message with missing username is received")
     public void an_invalid_message_is_received() throws JMSException {
         WorkloadRequest request = new WorkloadRequest(

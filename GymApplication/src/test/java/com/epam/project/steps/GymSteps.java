@@ -134,4 +134,34 @@ public class GymSteps {
         verify(jmsTemplate, never())
                 .convertAndSend(anyString(), any(Object.class), any(MessagePostProcessor.class));
     }
+
+	@When("I send a POST request to add a training for {string} and {string} with negative duration {int}")
+	public void add_training_negative_duration(String trainee, String trainer, int duration) throws Exception {
+		AddTrainingRequest request = new AddTrainingRequest(
+			trainee, trainer, "Negative Yoga", LocalDate.now(), duration
+		);
+
+		resultActions = mockMvc.perform(post("/api/trainings")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(request)));
+	}
+
+	@When("I send a GET request to retrieve trainer {string} without a token")
+	public void get_trainer_without_token(String trainerUsername) throws Exception {
+		resultActions = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/trainers/" + trainerUsername)
+			.contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@When("I try to login as {string} with wrong password {string}")
+	public void login_wrong_password(String username, String password) throws Exception {
+		resultActions = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/auth/login")
+			.param("username", username)
+			.param("password", password)
+			.contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Then("the response status should be {int} Unauthorized")
+	public void verify_status_unauthorized(int status) throws Exception {
+		resultActions.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().is(status));
+	}
 }
