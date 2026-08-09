@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gym_db
+    ports:
+      - "5432:5432"
+    networks:
+      - gym-network
+
+
+  mongo-db:
+    image: mongo:7.0
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    networks:
+      - gym-network
+
+
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: activemq
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    networks:
+      - gym-network
+
+
+  gym-main-service:
+    image: gym-main-service:latest
+    container_name: gym-main
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/gym_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_ACTIVEMQ_BROKER_URL=tcp://activemq:61616
+      - EUREKA_CLIENT_ENABLED=false
+    depends_on:
+      - postgres-db
+      - activemq
+    networks:
+      - gym-network
+
+
+  trainer-workload-service:
+    image: trainer-workload-service:latest
+    container_name: gym-workload
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-db:27017/workload_db
+      - SPRING_ACTIVEMQ_BROKER_URL=tcp://activemq:61616
+      - EUREKA_CLIENT_ENABLED=false
+    depends_on:
+      - mongo-db
+      - activemq
+    networks:
+      - gym-network
+
+networks:
+  gym-network:
+    driver: bridge
